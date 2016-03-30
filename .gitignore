@@ -1,0 +1,8 @@
+rt
+*.exe
+*.o
+a.out
+*.tga
+*.obj
+*~
+old/*
