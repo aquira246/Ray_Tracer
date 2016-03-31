@@ -1,6 +1,6 @@
 #pragma  once
-#ifndef __Plane__
-#define __Plane__
+#ifndef __BOX__
+#define __BOX__
 
 #include <Eigen/Dense>
 #include <math.h>
@@ -11,15 +11,16 @@
 #include "Shape.hpp"
 #include "Ray.hpp"
 
-class Plane: public Shape
+class Box: public Shape
 {
     public:
-        Plane();
-        Plane(Eigen::Vector3f c, Eigen::Vector3f n, float r);
-        ~Plane();
+        Box();
+        Box(Eigen::Vector3f c1, Eigen::Vector3f c2);
+        ~Box();
 
         Eigen::Vector3f normal;
-        // Shape has a center and radius, the only components of a Plane
+        Eigen::Vector3f corner1;
+        Eigen::Vector3f corner2;
 
         bool CalculateHit(Ray ray, double &t);
 

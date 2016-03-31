@@ -44,3 +44,9 @@ void Triangle::Initialize() {
    isFlat = true;
    #endif
 }
+
+// TODO
+bool Triangle::CalculateHit(Ray ray, double &t) {
+   return false;
+}
+

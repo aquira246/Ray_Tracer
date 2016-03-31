@@ -10,6 +10,7 @@
 
 #include "VectorMath.hpp"
 #include "Shape.hpp"
+#include "Ray.hpp"
 
 class Triangle: public Shape
 {
@@ -17,6 +18,8 @@ class Triangle: public Shape
       Triangle();
       Triangle(Eigen::Vector3f pta, Eigen::Vector3f ptb, Eigen::Vector3f ptc);
       ~Triangle();
+
+      bool CalculateHit(Ray ray, double &t);
 
    protected:
    // Parts of a triangle

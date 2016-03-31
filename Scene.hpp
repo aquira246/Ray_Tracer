@@ -22,7 +22,12 @@ class Scene
 		std::vector<Sphere> spheres;
 		std::vector<Plane> planes;
 
+        color_t ShootRayIntoScene(Ray ray, double &t);
+
 	private:
+        color_t BackgroundColor;
+        color_t ComputeLighting(Shape *hitShape);
+        bool CheckHit(Ray checkRay, Shape *&hitShape, double &t);
 };
 
 #endif

@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream> 
+
 #include "Shape.hpp"
+#include "Ray.hpp"
 
 class Sphere: public Shape
 {
@@ -19,6 +21,7 @@ class Sphere: public Shape
 		~Sphere();
 		
 		// Shape has a center and radius, the only components of a sphere
+        bool CalculateHit(Ray ray, double &t);
 
 	private:
 };

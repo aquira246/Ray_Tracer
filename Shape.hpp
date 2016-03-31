@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <iostream> 
 
+#include "Ray.hpp"
+
 // POV-ray material
 struct Material
 {
@@ -31,6 +33,9 @@ class Shape
         #endif
 
         void SetMaterialToMat(Material newMat); 
+        virtual bool CalculateHit(Ray ray, double &t) {
+            return 0;
+        }
 
     private:
 };

@@ -1,9 +1,8 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
+#include <Eigen/Dense>
 #include <vector>
-#include "Triangle.hpp"
-#include "Sphere.hpp"
 
 /* Color struct */
 typedef struct color_struct {
