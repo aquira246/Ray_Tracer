@@ -3,20 +3,21 @@
 #include <assert.h>
 #include <iostream> 
 #include <string>
-#include <vector>
 
 #include "Tokens.hpp"
 
 #define MAX_STR_LENGTH 128
+#define CR '\010'
+#define LF '\0'
 
 using namespace std;
 
 /* Tokeninzing part of the parser; the parsing routines call 
-GetToken() and UngetToken() to retrieve tokens from the input stream.
-GetToken reads the input stream of characters stripping the comments 
-until a complete token is produced. Then the token is placed into the
-global variable Token, from which it can ber retrieved by the calling
-routines. 
+ * GetToken() and UngetToken() to retrieve tokens from the input stream.
+ * GetToken reads the input stream of characters stripping the comments 
+ * until a complete token is produced. Then the token is placed into the
+ * global variable Token, from which it can ber retrieved by the calling
+ * routines. 
 */
 
 Token_Struct Token;
@@ -30,15 +31,15 @@ Token_Struct Token;
  */
 static enum TokenIDs FindReserved(string str)
 {
-   //if(!str.compare("rotate")) return T_ROTATE;
-   //if(!str.compare("translate")) return T_TRANSLATE;
-   //if(!str.compare("scale")) return T_SCALE;
+   if(!str.compare("rotate")) return T_ROTATE;
+   if(!str.compare("translate")) return T_TRANSLATE;
+   if(!str.compare("scale")) return T_SCALE;
    //if(!str.compare("matrix")) return T_MATRIX;
    //if(!str.compare("polygon")) return T_POLYGON;
    if(!str.compare("triangle")) return T_TRIANGLE;
    if(!str.compare("sphere")) return T_SPHERE;
    if(!str.compare("plane")) return T_PLANE;
-   //if(!str.compare("box")) return T_BOX;
+   if(!str.compare("box")) return T_BOX;
    //if(!str.compare("cylinder")) return T_CYLINDER;
    //if(!str.compare("cone")) return T_CONE;
    //if(!str.compare("quadric")) return T_QUADRIC;
@@ -48,7 +49,7 @@ static enum TokenIDs FindReserved(string str)
    if(!str.compare("up")) return T_UP;
    if(!str.compare("look_at")) return T_LOOK_AT;
    if(!str.compare("angle")) return T_ANGLE;
-   if(!str.compare("global_settings")) return T_GLOBAL_SETTINGS;
+   //if(!str.compare("global_settings")) return T_GLOBAL_SETTINGS;
    if(!str.compare("ambient_light")) return T_AMBIENT_LIGHT;
    if(!str.compare("light_source")) return T_LIGHT_SOURCE;
    if(!str.compare("finish")) return T_FINISH;
@@ -57,20 +58,70 @@ static enum TokenIDs FindReserved(string str)
    if(!str.compare("color")) return T_COLOR;
    if(!str.compare("rgbf")) return T_RGBF;
    if(!str.compare("reflection")) return T_REFLECTION;
+   if(!str.compare("refraction")) return T_REFRACTION;
    if(!str.compare("ambient")) return T_AMBIENT;
    if(!str.compare("diffuse")) return T_DIFFUSE;
    if(!str.compare("specular")) return T_SPECULAR;
    if(!str.compare("roughness")) return T_ROUGHNESS;
-   if(!str.compare("phong")) return T_PHONG;
-   if(!str.compare("metallic")) return T_METALLIC;
-   if(!str.compare("phong_size")) return T_PHONG_SIZE;
-   if(!str.compare("interior")) return T_INTERIOR;
+   //if(!str.compare("phong")) return T_PHONG;
+   //if(!str.compare("metallic")) return T_METALLIC;
+   //if(!str.compare("phong_size")) return T_PHONG_SIZE;
+   //if(!str.compare("interior")) return T_INTERIOR;
    if(!str.compare("ior")) return T_IOR;
    return T_NULL;
 }
 
-#define CR '\010'
-#define LF '\0'
+string TokenToString(enum TokenIDs id) {
+   if(id == T_DOUBLE) return "Double";
+   if(id == T_COMMA) return ",";
+
+   if(id == T_LEFT_ANGLE) return "<";
+   if(id == T_RIGHT_ANGLE) return ">";
+   if(id == T_LEFT_CURLY) return "{";
+   if(id == T_RIGHT_CURLY) return "}";
+   if(id == T_ROTATE) return "Rotate";
+   if(id == T_TRANSLATE) return "Translate";
+   if(id == T_SCALE) return "Scale";
+   //if(id == T_MATRIX) return "Matrix";
+   //if(id == T_POLYGON) return "Polygon";
+   if(id == T_PLANE) return "Plane";
+   if(id == T_TRIANGLE) return "Triangle";
+   if(id == T_SPHERE) return "Sphere";
+   if(id == T_BOX) return "Box";
+   //if(id == T_CYLINDER) return "Cylinder";
+   //if(id == T_CONE) return "Cone";
+   //if(id == T_QUADRIC) return "Quadratic";
+   if(id == T_CAMERA) return "Camera";
+   if(id == T_LOCATION) return "Location";
+   if(id == T_RIGHT) return "Right";
+   if(id == T_UP) return "Up";
+   if(id == T_LOOK_AT) return "Look At";
+   if(id == T_ANGLE) return "Angle";
+   //if(id == T_GLOBAL_SETTINGS) return "Global Settings";
+   if(id == T_AMBIENT_LIGHT) return "Ambient";
+   if(id == T_LIGHT_SOURCE) return "Light Source";
+   if(id == T_FINISH) return "Finish";
+   if(id == T_PIGMENT) return "Pigment";
+   if(id == T_COLOR) return "Color";
+   if(id == T_RGB) return "RGB";
+   if(id == T_RGBF) return "RGBF";
+   if(id == T_REFLECTION) return "Reflection";
+   if(id == T_REFRACTION) return "Refraction";
+   if(id == T_AMBIENT) return "Ambient";
+   if(id == T_DIFFUSE) return "Diffuse";
+   if(id == T_SPECULAR) return "Specular";
+   if(id == T_ROUGHNESS) return "Roughness";
+   // if(id == T_PHONG) return "Phong";
+   // if(id == T_METALLIC) return "Metallic";
+   // if(id == T_PHONG_SIZE) return "Phong Size";
+   // if(id == T_INTERIOR) return "Interior";
+   if(id == T_IOR) return "IOR";
+   if(id == T_NULL) return "NULL";
+   if(id == T_EOF) return "EOF";
+   if(id == T_LAST) return "Last";
+
+   return "Unknown Token";
+}
 
 void Error(string str) {
   cout << "Line " << Token.lineNumber << ": " << str << endl;
@@ -78,7 +129,6 @@ void Error(string str) {
 }
 
 /* should be called before GetToken() */
-
 void InitializeToken(FILE* infile) { 
   Token.unget_flag = 0;
   Token.id = T_NULL;
@@ -88,38 +138,34 @@ void InitializeToken(FILE* infile) {
 
 
 static void SkipSpaces() { 
-  int c;
-  while(1) { 
-    c = getc(Token.infile);
-    if( c == '\n') Token.lineNumber++;
-    if (c == EOF ) return;
-    if( c ==  '/') {
-      /* we use slash only as a part of the 
-         comment begin sequence; if something other than another 
-         slash follows it, it is an error */
-      if( getc(Token.infile) == '/') {
-        /* skip everything till the end of the line */
-        while( c != '\n' && c != '\r' && c != EOF ) {
-          c = getc(Token.infile);
-        }
-        Token.lineNumber++;
-      } else Error("Missing second slash in comment");
-    }
-    if(!isspace(c))
+   int c;
+   while(1) { 
+      c = getc(Token.infile);
+      if(c == '\n') Token.lineNumber++;
+      if(c == EOF) return;
+      if(c ==  '/') {
+         // we use slash only as a part of the 
+         // comment begin sequence; if something other than another 
+         // slash follows it, it is an error
+         if( getc(Token.infile) == '/') {
+            // skip everything till the end of the line
+            while( c != '\n' && c != '\r' && c != EOF ) {
+               c = getc(Token.infile);
+            }
+            Token.lineNumber++;
+         } else Error("Missing second slash in comment");
+      }
+      if(!isspace(c))
       break;
-  } 
-  ungetc(c, Token.infile);
+   } 
+   ungetc(c, Token.infile);
 }
 
 void ReadDouble() { 
-  /* this is cheating -- we'd better parse the number definition 
-     ourselves, to make sure it conforms to a known standard and 
-     to do error hanndling properly,
-     but for our purposes  this is good enough */
-  int res;
-  res = fscanf( Token.infile, "%le", &Token.double_value);
-  if( res == 1 ) Token.id = T_DOUBLE; 
-  else Error("Could not read a number");
+   int res;
+   res = fscanf(Token.infile, "%le", &Token.double_value);
+   if(res == 1) Token.id = T_DOUBLE; 
+   else Error("Could not read a number");
 }
 
 static void ReadName() { 
@@ -134,7 +180,7 @@ static void ReadName() {
          Error("Could not read a name");
       }
       if (isalpha(c) || isdigit(c) || c == '_') {
-      /* if the name is too long, ignore extra characters */
+      // if the name is too long, ignore extra characters
          if( str_index < MAX_STR_LENGTH - 1) {
             str[str_index++] = c;
          }
@@ -160,53 +206,54 @@ static void ReadName() {
  * returns 0, otherwise returns 1.
  */
 void GetToken() { 
-  int c;
-  if(Token.unget_flag) { 
-    Token.unget_flag = FALSE;
-    return;
-  }
+   int c;
+   if(Token.unget_flag) { 
+      Token.unget_flag = FALSE;
+      return;
+   }
   
-  SkipSpaces();
-  c = getc(Token.infile);
+   SkipSpaces();
+   c = getc(Token.infile);
   
-  if( c == EOF ) { 
-    Token.id = T_EOF;
-    return;
-  }
+   if(c == EOF) { 
+      Token.id = T_EOF;
+      return;
+   }
   
-  if(isalpha(c)) { 
-    ungetc(c, Token.infile);
-    ReadName();
-  } else if(isdigit(c) || c == '.' || c == '-' || c == '+' ) { 
-    ungetc(c, Token.infile); 
-    ReadDouble();
-  } else { 
-    switch(c) { 
-    case ',':   
-      Token.id = T_COMMA;
-      break;    
-    case '{': 
-      Token.id = T_LEFT_CURLY;
-      break;
-    case '}': 
-      Token.id = T_RIGHT_CURLY;
-      break;
-    case '<': 
-      Token.id = T_LEFT_ANGLE;
-      break;
-    case '>': 
-      Token.id = T_RIGHT_ANGLE;
-      break;
-    default:
-      Error("Unknown token");
-    }
-  }
+   if(isalpha(c)) { 
+      ungetc(c, Token.infile);
+      ReadName();
+   } else if(isdigit(c) || c == '.' || c == '-' || c == '+' ) { 
+      ungetc(c, Token.infile); 
+      ReadDouble();
+   } else { 
+      switch(c) { 
+         case ',':   
+            Token.id = T_COMMA;
+            break;    
+         case '{': 
+            Token.id = T_LEFT_CURLY;
+            break;
+         case '}': 
+            Token.id = T_RIGHT_CURLY;
+            break;
+         case '<': 
+            Token.id = T_LEFT_ANGLE;
+            break;
+         case '>': 
+            Token.id = T_RIGHT_ANGLE;
+            break;
+         default:
+            Error("Unknown token");
+      }
+   }
 }
 
-/* Assumes that GetToken() was called at least once. 
-Cannot be called two times without a GetToken() between 
-the calls */
-
+/* 
+ * Returns a token to the data stream.
+ * Assumes that GetToken() was called at least once. 
+ * Cannot be called two times without a GetToken() between the calls.
+ */
 void UngetToken() { 
   assert(!Token.unget_flag);
   Token.unget_flag = TRUE;

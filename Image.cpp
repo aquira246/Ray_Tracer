@@ -7,6 +7,8 @@
 
 #include "Image.hpp"
 
+using namespace Eigen;
+
 Image::Image(int width, int height)
 {
     _width = width;
@@ -14,12 +16,12 @@ Image::Image(int width, int height)
     _max = 1.0;
 
     // allocate the first dimension, "width" number of color_t pointers...
-    _pixmap = (color_t **)malloc(sizeof(color_t *) * _width);
+    _pixmap = (Vector3f **)malloc(sizeof(Vector3f *) * _width);
 
     // allocate the second dimension, "height" number of color_t structs...
     for (int i = 0; i < _width; i++)
     {
-        _pixmap[i] = (color_t *)malloc(sizeof(color_t) * _height);
+        _pixmap[i] = (Vector3f *)malloc(sizeof(Vector3f) * _height);
     }
 }
 
@@ -82,15 +84,15 @@ void Image::WriteTga(char *outfile, bool scale_color)
             unsigned char rbyte, gbyte, bbyte;
             if (scale_color)
             {
-                rbyte = (unsigned char)((_pixmap[x][y].r / _max) * 255);
-                gbyte = (unsigned char)((_pixmap[x][y].g / _max) * 255);
-                bbyte = (unsigned char)((_pixmap[x][y].b / _max) * 255);
+                rbyte = (unsigned char)((_pixmap[x][y][0] / _max) * 255);
+                gbyte = (unsigned char)((_pixmap[x][y][1] / _max) * 255);
+                bbyte = (unsigned char)((_pixmap[x][y][2] / _max) * 255);
             }
             else
             {
-                double r = (_pixmap[x][y].r > 1.0) ? 1.0 : _pixmap[x][y].r;
-                double g = (_pixmap[x][y].g > 1.0) ? 1.0 : _pixmap[x][y].g;
-                double b = (_pixmap[x][y].b > 1.0) ? 1.0 : _pixmap[x][y].b;
+                double r = (_pixmap[x][y][0] > 1.0) ? 1.0 : _pixmap[x][y][0];
+                double g = (_pixmap[x][y][1] > 1.0) ? 1.0 : _pixmap[x][y][1];
+                double b = (_pixmap[x][y][2] > 1.0) ? 1.0 : _pixmap[x][y][2];
                 rbyte = (unsigned char)(r * 255);
                 gbyte = (unsigned char)(g * 255);
                 bbyte = (unsigned char)(b * 255);
@@ -106,7 +108,7 @@ void Image::WriteTga(char *outfile, bool scale_color)
 
 void Image::GenTestPattern()
 {
-    color_t pxl = {0.0, 0.0, 0.0, 0.0};
+    Vector3f pxl = Vector3f(0,0,0);
     int i, j, color;
     float radius, dist;
     
@@ -122,15 +124,15 @@ void Image::GenTestPattern()
             switch (color)
             {
                 case 0: // red
-                    pxl.r = 1.0; pxl.g = 0.0; pxl.b = 0.0;
+                    pxl[0] = 1.0; pxl[1] = 0.0; pxl[2] = 0.0;
                     break;
 
                 case 1: // green
-                    pxl.r = 0.0; pxl.g = 1.0; pxl.b = 0.0;
+                    pxl[0] = 0.0; pxl[1] = 1.0; pxl[2] = 0.0;
                     break;
 
                 case 2: // blue
-                    pxl.r = 0.0; pxl.g = 0.0; pxl.b = 1.0;
+                    pxl[0] = 0.0; pxl[1] = 0.0; pxl[2] = 1.0;
                     break;
             }
 
@@ -139,7 +141,7 @@ void Image::GenTestPattern()
     }
 
     // draw a black circle in the top left quadrant (centered at (i, j))
-    pxl.r = 0.0; pxl.g = 0.0; pxl.b = 0.0;
+    pxl[0] = 0.0; pxl[1] = 0.0; pxl[2] = 0.0;
     i = _width / 4;
     j = 3 * _height / 4;
     radius = (((float)_width / 4.0) < ((float)_height / 4.0)) ? (float)_width / 4.0 : (float)_height / 4.0;
@@ -156,7 +158,7 @@ void Image::GenTestPattern()
     }
     
     // draw a white circle in the lower right quadrant (centered at (i, j))
-    pxl.r = 1.0; pxl.g = 1.0; pxl.b = 1.0;
+    pxl[0] = 1.0; pxl[1] = 1.0; pxl[2] = 1.0;
     i = 3 * _width / 4;
     j = _height / 4;
     radius = (((float)_width / 4.0) < ((float)_height / 4.0)) ? (float)_width / 4.0 : (float)_height / 4.0;
@@ -173,7 +175,7 @@ void Image::GenTestPattern()
     }
 }
 
-color_t Image::pixel(int x, int y)
+Eigen::Vector3f Image::pixel(int x, int y)
 {
     if (x < 0 || x > _width - 1 ||
         y < 0 || y > _height - 1)
@@ -186,7 +188,7 @@ color_t Image::pixel(int x, int y)
     return _pixmap[x][y];
 }
 
-void Image::pixel(int x, int y, color_t pxl)
+void Image::pixel(int x, int y, Eigen::Vector3f pxl)
 {
     if (x < 0 || x > _width - 1 ||
         y < 0 || y > _height - 1)
@@ -199,8 +201,8 @@ void Image::pixel(int x, int y, color_t pxl)
     _pixmap[x][y] = pxl;
 
     // update the max color if necessary
-    _max = (pxl.r > _max) ? pxl.r : _max;
-    _max = (pxl.g > _max) ? pxl.g : _max;
-    _max = (pxl.b > _max) ? pxl.b : _max;
+    _max = (pxl[0] > _max) ? pxl[0] : _max;
+    _max = (pxl[1] > _max) ? pxl[1] : _max;
+    _max = (pxl[2] > _max) ? pxl[2] : _max;
 }
 

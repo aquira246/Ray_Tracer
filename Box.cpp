@@ -25,13 +25,26 @@ Box::~Box(){
 
 }
 
+// TODO Test
+void Box::Parse(Box &box) {
+   box.corner1 = Eigen::Vector3f(-.5, -.5, -.5);
+   box.corner2 = Eigen::Vector3f(.5, .5, .5);
+
+   ParseLeftCurly();
+   ParseVector(box.corner1);
+   ParseComma();
+   ParseVector(box.corner2);
+   Shape::ParseModifiers(box);
+   ParseRightCurly();
+}
+
 void float_swap(float &a, float &b) {
    float hold = a;
    a = b;
    b = hold;
 }
 
-// TODO test. This is untested.
+// TODO test. This is untested. Also switch to unaxis aligned
 // http://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
 bool Box::CalculateHit(Ray ray, double &t) {
    float tmin = (corner1(0) - ray.position(0)) / ray.direction(0);

@@ -3,7 +3,7 @@
 #define __RAY__
 
 #include <Eigen/Dense>
-#include "types.h"
+#include "Camera.hpp"
 
 class Ray
 {
@@ -18,6 +18,6 @@ class Ray
     private:
 };
 
-Ray ComputeCameraRay(int i, int j, int width, int height, struct Camera cam);
+Ray ComputeCameraRay(int i, int j, int width, int height, Camera cam);
 
 #endif

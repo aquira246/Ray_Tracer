@@ -6,3 +6,4 @@ a.out
 *.obj
 *~
 old/*
+parser_stuff/*

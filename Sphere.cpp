@@ -34,6 +34,18 @@ Sphere::~Sphere(){
 
 }
 
+void Sphere::Parse(Sphere &sphere) {
+   sphere.center = Vector3f(0, 0, 0);
+   sphere.radius = 1.0;
+
+   ParseLeftCurly();
+   ParseVector(sphere.center);
+   ParseComma();
+   sphere.radius = ParseDouble();
+   Shape::ParseModifiers(sphere);
+   ParseRightCurly();
+}
+
 // TODO
 bool Sphere::CalculateHit(Ray ray, double &t) {
    Eigen::Vector3f dir = ray.direction;
@@ -62,4 +74,3 @@ bool Sphere::CalculateHit(Ray ray, double &t) {
 
    return true;
 }
-

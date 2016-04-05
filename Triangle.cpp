@@ -24,6 +24,9 @@ Triangle::~Triangle(){
 
 }
 
+/*
+ * Calculate normal and bounding sphere.
+ */
 void Triangle::Initialize() {
    // compute plane's normal
    Eigen::Vector3f ab = b - a;
@@ -45,8 +48,22 @@ void Triangle::Initialize() {
    #endif
 }
 
+void Triangle::Parse(Triangle &triangle) {
+   ParseLeftCurly();
+
+   ParseVector(triangle.a);
+   ParseComma();
+   ParseVector(triangle.b);
+   ParseComma();
+   ParseVector(triangle.c);
+   Shape::ParseModifiers(triangle);
+
+   ParseRightCurly();
+   
+   triangle.Initialize();
+}
+
 // TODO
 bool Triangle::CalculateHit(Ray ray, double &t) {
    return false;
 }
-

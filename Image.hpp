@@ -11,8 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
-#include "types.h"
+#include <Eigen/Dense>
 
 class Image {
    public:
@@ -26,8 +25,8 @@ class Image {
       void GenTestPattern();
 
       // property accessors
-      color_t pixel(int x, int y);
-      void pixel(int x, int y, color_t pxl);
+      Eigen::Vector3f pixel(int x, int y);
+      void pixel(int x, int y, Eigen::Vector3f pxl);
       int width() const { return _width; }
       int height() const { return _height; }
       double max() const { return _max; }
@@ -35,7 +34,7 @@ class Image {
    private:
       int _width;
       int _height;
-      color_t **_pixmap;
+      Eigen::Vector3f **_pixmap;
       double _max;
 };
 

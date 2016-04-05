@@ -1,13 +1,12 @@
-#pragma  once
-#ifndef __Sphere__
-#define __Sphere__
+#pragma once
+#ifndef __SPHERE_H__
+#define __SPHERE_H__
 
 #include <Eigen/Dense>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream> 
-
 #include "Shape.hpp"
 #include "Ray.hpp"
 
@@ -20,8 +19,10 @@ class Sphere: public Shape
 		Sphere(Eigen::Vector3f c, float r);
 		~Sphere();
 		
+      static void Parse(Sphere &sphere);
+
 		// Shape has a center and radius, the only components of a sphere
-        bool CalculateHit(Ray ray, double &t);
+      bool CalculateHit(Ray ray, double &t);
 
 	private:
 };

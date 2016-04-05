@@ -26,6 +26,19 @@ Plane::~Plane(){
 
 }
 
+void Plane::Parse(Plane &plane) {
+   ParseLeftCurly();
+
+   ParseVector(plane.normal);
+   ParseComma();
+   plane.center = ParseDouble() * plane.normal;
+   Shape::ParseModifiers(plane);
+   //planes have infinite radius so lets just use -1 to represent this
+   plane.radius = -1;
+
+   ParseRightCurly();
+}
+
 // t = (n dot (plane point - ray position))/(n dot ray direction)
 bool Plane::CalculateHit(Ray ray, double &t) {
    t = -1;
@@ -43,11 +56,11 @@ bool Plane::CalculateHit(Ray ray, double &t) {
 
    if (t < 0) return false;
 
-   // stop here if this is an infinite plane
-   if (radius < 0) {
-      return true;
-   }
-
+   // stop here if this is an infinite plane. All of our planes are infinite
+   return true;
+   
+   /*
+   // This would be where you calculate, if the plane has a radius, if it hits
    // calculate the intersection point
    Eigen::Vector3f p = ray.position + ray.direction * t;
 
@@ -59,4 +72,5 @@ bool Plane::CalculateHit(Ray ray, double &t) {
    if (d2 <= radius*radius) return true;
 
    return false;
+   */
 }

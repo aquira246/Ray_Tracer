@@ -1,6 +1,6 @@
-#pragma  once
-#ifndef __Plane__
-#define __Plane__
+#pragma once
+#ifndef __PLANE_H__
+#define __PLANE_H__
 
 #include <Eigen/Dense>
 #include <math.h>
@@ -13,17 +13,19 @@
 
 class Plane: public Shape
 {
-    public:
-        Plane();
-        Plane(Eigen::Vector3f c, Eigen::Vector3f n, float r);
-        ~Plane();
+   public:
+      Plane();
+      Plane(Eigen::Vector3f c, Eigen::Vector3f n, float r);
+      ~Plane();
 
-        Eigen::Vector3f normal;
-        // Shape has a center and radius, the only components of a Plane
+      static void Parse(Plane &plane);
 
-        bool CalculateHit(Ray ray, double &t);
+      Eigen::Vector3f normal;
+      // Shape has a center and radius
 
-    private:
+      bool CalculateHit(Ray ray, double &t);
+
+   private:
 };
 
 #endif

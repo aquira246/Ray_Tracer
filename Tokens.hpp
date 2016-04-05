@@ -21,12 +21,10 @@ enum TokenIDs {
   T_RIGHT_ANGLE,
   T_LEFT_CURLY,
   T_RIGHT_CURLY,
-
   T_ROTATE,
   T_TRANSLATE,
   T_SCALE,
-  T_MATRIX,
-
+  //T_MATRIX,
   //T_POLYGON,
   T_PLANE,
   T_TRIANGLE,
@@ -35,16 +33,13 @@ enum TokenIDs {
   //T_CYLINDER,
   //T_CONE,
   //T_QUADRIC,
-
   T_CAMERA,
   T_LOCATION,
   T_RIGHT,
   T_UP,
-  
   T_LOOK_AT,
   T_ANGLE,
-
-  T_GLOBAL_SETTINGS,
+  //T_GLOBAL_SETTINGS,
   T_AMBIENT_LIGHT,
   T_LIGHT_SOURCE,
   T_FINISH,
@@ -53,14 +48,15 @@ enum TokenIDs {
   T_RGB,
   T_RGBF,
   T_REFLECTION,
+  T_REFRACTION,
   T_AMBIENT,
   T_DIFFUSE,
   T_SPECULAR,
   T_ROUGHNESS,
-  T_PHONG,
-  T_METALLIC,
-  T_PHONG_SIZE,
-  T_INTERIOR,
+  //T_PHONG,
+  //T_METALLIC,
+  //T_PHONG_SIZE,
+  //T_INTERIOR,
   T_IOR,
 
   T_NULL,
@@ -71,20 +67,18 @@ enum TokenIDs {
 
 struct Token_Struct { 
    enum TokenIDs id; 
-   double double_value; /* has meaning only if id = T_DOUBLE */
+   double double_value; // has meaning only if id = T_DOUBLE
    int unget_flag;
    FILE* infile;
    int lineNumber;
 } typedef Token_Struct;
 
-//std::vector<std::string> TokenNames;
 extern Token_Struct Token;
 
 void Error(std::string error_msg);
-
 void InitializeToken(FILE* infile);
-
 void GetToken();
 void UngetToken();
+std::string TokenToString(enum TokenIDs id);
 
 #endif /* __TOKENS_H__ */

@@ -2,13 +2,20 @@
 #ifndef __Scene__
 #define __Scene__
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <Eigen/Dense>
 #include <vector>
+#include "Parse.hpp"
+#include "Camera.hpp"
+#include "Light.hpp"
 #include "Shape.hpp"
+
+//Add shapes here as needed
 #include "Triangle.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
-#include "types.h"
+#include "Box.hpp"
 
 class Scene
 {
@@ -21,12 +28,15 @@ class Scene
 		std::vector<Triangle> triangles;
 		std::vector<Sphere> spheres;
 		std::vector<Plane> planes;
+        std::vector<Box> boxes;
 
-        color_t ShootRayIntoScene(Ray ray, double &t);
+		Eigen::Vector3f ShootRayIntoScene(Ray ray, double &t);
+
+    	static int Parse(FILE* infile, Scene &scene);
 
 	private:
-        color_t BackgroundColor;
-        color_t ComputeLighting(Shape *hitShape);
+		Eigen::Vector3f BackgroundColor;
+        Eigen::Vector3f ComputeLighting(Shape *hitShape);
         bool CheckHit(Ray checkRay, Shape *&hitShape, double &t);
 };
 

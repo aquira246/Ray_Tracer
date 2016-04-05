@@ -18,6 +18,8 @@ class Box: public Shape
         Box(Eigen::Vector3f c1, Eigen::Vector3f c2);
         ~Box();
 
+        static void Parse(Box &box);
+
         Eigen::Vector3f normal;
         Eigen::Vector3f corner1;
         Eigen::Vector3f corner2;

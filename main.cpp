@@ -1,25 +1,15 @@
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#endif
-#ifdef __unix__
-#include <GL/glut.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <iostream>
 #include <memory>
-
-#include "Scene.hpp"
-#include "Parse.hpp"
-#include "Image.hpp"
-#include "types.h"
-
 #include <Eigen/Dense>
-#include <Eigen/Geometry>
 #include <vector>
 #include <math.h>
+
+#include "Image.hpp"
+#include "Ray.hpp"
+#include "Scene.hpp"
+#include "unit_tests.hpp"
 
 using namespace std;
 
@@ -29,6 +19,12 @@ Scene scene;
 
 int main(int argc, char **argv)
 {
+   #ifdef UNIT_TEST
+   
+   // Run the Unit Tests
+   UnitTest1();
+   
+   #else
    FILE* infile;
    scene = Scene();
  
@@ -39,8 +35,8 @@ int main(int argc, char **argv)
    }
 
    if(argc == 4) {
-      width = std::stoi(argv[1]);
-      height = std::stoi(argv[2]);
+      width = stoi(argv[1]);
+      height = stoi(argv[2]);
       infile = fopen(argv[3], "r");
    } else {
       infile = fopen(argv[1], "r");
@@ -48,36 +44,14 @@ int main(int argc, char **argv)
 
    if(infile) {
       cout << "Width: " << width << "   Height: " << height << endl;
-      cout << Parse(infile, scene) << " objects parsed from scene file" << endl;
-   }
-   else {
+      cout << Scene::Parse(infile, scene) << " objects parsed from scene file" << endl;
+   } else {
       perror("fopen");
       exit(EXIT_FAILURE);
    }
 
    double t;
 
-   #ifdef UNIT_TEST
-   int testPoints[] = {320, 240, 170, 120, 490, 120, 170, 360, 490, 360};
-
-   cout << "For file " << argv[3] << endl;
-   for (int i = 0; i < 5; ++i)
-   {
-      // calculate camera ray
-      Ray laser = ComputeCameraRay(testPoints[i*2], testPoints[i*2 + 1], width, height, scene.camera);
-      cout << "Ray at (" << testPoints[i*2] << ", " << testPoints[i*2 + 1] << ") has position: \n";
-      cout << laser.position << endl;
-      cout << " and direction " << endl; 
-      cout << laser.direction << endl;
-
-      color_t clr = scene.ShootRayIntoScene(laser, t);
-
-      cout << "Color: r = " << clr.r << " g = " << clr.g << " b = " << clr.b << " f = " << clr.f << endl;
-      cout << endl;
-      cout << "distance of hit: " << t << endl;
-   }
-
-   #else
    // create picture
    Image *img = new Image(width, height);
 
@@ -90,7 +64,7 @@ int main(int argc, char **argv)
          Ray laser = ComputeCameraRay(x, y, width, height, scene.camera);
          
          // get the color that the ray provides
-         color_t clr = scene.ShootRayIntoScene(laser, t);
+         Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t);
 
          // set the image pixel to be that color
          img->pixel(x, y, clr);

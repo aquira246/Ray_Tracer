@@ -1,43 +1,41 @@
-#pragma  once
-#ifndef __SHAPE__
-#define __SHAPE__
+#pragma once
+#ifndef __SHAPE_H__
+#define __SHAPE_H__
 
 #include <Eigen/Dense>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream> 
-
+#include <iostream>
+#include "Parse.hpp"
+#include "Finish.hpp"
 #include "Ray.hpp"
-
-// POV-ray material
-struct Material
-{
-   Eigen::Vector3f rgb;
-   float ambient, diffuse, specular, roughness, shine;
-} typedef Material;
-
 
 class Shape
 {
-    public:
-        Shape();
-        ~Shape();
-        
-        Material mat;
-        // No matter the shape we generate a bounding sphere
-        Eigen::Vector3f center;
-        float radius;
-        #ifndef CULLING
-        bool isFlat; // flat objects need to have 2 faces checked
-        #endif
+   public:
+      Shape();
+      ~Shape();
+      
+      // Shape visual properties
+      Finish finish;
+      Eigen::Vector4f color;
 
-        void SetMaterialToMat(Material newMat); 
-        virtual bool CalculateHit(Ray ray, double &t) {
-            return 0;
-        }
+      // No matter the shape we generate a bounding sphere
+      Eigen::Vector3f center;
+      float radius;
 
-    private:
+      #ifndef CULLING
+      bool isFlat; // flat objects need to have 2 faces checked
+      #endif
+
+      static void ParseModifiers(Shape &shape);
+      
+      virtual bool CalculateHit(Ray ray, double &t) {
+         return 0;
+      }
+
+   private:
 };
 
 // return vector: inxex 1: how many answers there are

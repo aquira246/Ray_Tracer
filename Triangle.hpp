@@ -1,6 +1,6 @@
-#pragma  once
-#ifndef __Triangle__
-#define __Triangle__
+#pragma once
+#ifndef __TRIANGLE_H__
+#define __TRIANGLE_H__
 
 #include <Eigen/Dense>
 #include <math.h>
@@ -18,7 +18,8 @@ class Triangle: public Shape
       Triangle();
       Triangle(Eigen::Vector3f pta, Eigen::Vector3f ptb, Eigen::Vector3f ptc);
       ~Triangle();
-
+      
+      static void Parse(Triangle &triangle);
       bool CalculateHit(Ray ray, double &t);
 
    protected:
