@@ -1,4 +1,5 @@
 rt
+rt_test
 *.exe
 *.o
 a.out
@@ -7,3 +8,4 @@ a.out
 *~
 old/*
 parser_stuff/*
+pre-parser/*
