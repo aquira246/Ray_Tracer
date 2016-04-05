@@ -43,3 +43,18 @@ void Camera::Parse(Camera &camera) {
    ParseRightCurly();
 }
 
+void Camera::initialize() {
+   t = up.norm()/2;
+   b = -up.norm()/2;
+   l = -right.norm()/2;
+   r = right.norm()/2;
+
+  direction = look_at - position;
+  direction.normalize();
+  
+  upAxis = -direction.cross(right);
+  upAxis.normalize();
+
+  rightAxis = direction.cross(up);
+  rightAxis.normalize();
+}

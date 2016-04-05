@@ -70,6 +70,8 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    cout << "Boxes: " << scene.boxes.size() << endl;
    cout << "Lights: " << scene.lights.size() << endl;
 
+   scene.camera.initialize();
+
    return numObjects;
 }
 
