@@ -1,0 +1,26 @@
+Ray Tracer program by Andrew Acosta
+
+How to make:
+to make the program, just type "make". This should result in a lot of object files and the rt executable
+to make the Unit test mode, type "make UNIT=1". This should result in object files and the rt_test executable
+
+How to run:
+    Use this to create an image called sample.tga of the pov ray file
+    rt <width> <height> <input_scene.pov>" << endl;
+
+    Using this will run the ray tracer with a width of 640 height of 480 by defualt
+    rt <input_scene.pov>
+
+Use "make clean" to remove all of the executables and object files
+
+Current Status:
+Ray Generation: Working
+Sphere Collision: Working
+Plane collision: Working
+Shading: only showing the color of the object
+
+Parsing: what is missing
+            transforms
+            ior
+            reflection
+            refraction
