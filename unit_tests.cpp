@@ -82,7 +82,12 @@ void UnitTest1_Helper2(string filename, int width, int height, int *tp, double *
       // calculate camera ray
       Ray laser = ComputeCameraRay(tp[i*2], tp[i*2 + 1], width, height, scene.camera);
       Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t);
-      clr *= 255;
+      if (!(tc[i](0) <= 1 && tc[i](1) <= 1 && tc[i](2) <= 1)) {
+         clr *= 255;
+         clr(0) = ceil(clr(0));
+         clr(1) = ceil(clr(1));
+         clr(2) = ceil(clr(2));
+      }
 
       if (!checkDifference(clr, tc[i]) || fabs(t - tr[i]) > EPSILON) {
          cout << endl;
@@ -107,12 +112,24 @@ void UnitTest1() {
 
 
    cout << " ================== Beginning unit test 1 ================== " << endl;
+   cout << "Testing Ray Directions and Positions" << endl;
    UnitTest1_Helper1();
 
-   int n = 3;
-   int testPositions[] = {320, 240, 360, 219, 490, 360};
-   double tResults[] = {12.9902f, 13.71856, -1}; // 0 should be -1
-   Eigen::Vector3f colorResults[] = {Eigen::Vector3f(255, 255, 255), Eigen::Vector3f(0,0,0), Eigen::Vector3f(0,0,0)};
-   // UnitTest1_Helper2("resources/planes.pov", width, height);
+   int n = 5; //3;
+   int testPositions[] = {320, 239, 360, 219, 230, 239, 120, 349, 490, 119}; //{320, 240, 360, 219, 490, 360};
+   double tResults[] = {12.9902, 13.71856, 16.58557, 14.28708, -1}; //{12.9902f, 13.71856, -1}; // 0 should be -1
+   Eigen::Vector3f colorResults[] = {Eigen::Vector3f(255, 255, 255), Eigen::Vector3f(0,0,0), Eigen::Vector3f(64,64,64), 
+                                    Eigen::Vector3f(31, 87, 143), Eigen::Vector3f(0,0,0)};
+   //{Eigen::Vector3f(255, 255, 255), Eigen::Vector3f(0,0,0), Eigen::Vector3f(0,0,0)};
+
+   cout << "running spheres.pov test" << endl;
    UnitTest1_Helper2("resources/spheres.pov", width, height, testPositions, tResults, colorResults, n);
+
+   int testPositions2[] = {50, 240, 320, 50, 590, 240};
+   double tResults2[] = {10.213, 16.3394, 12.2212};
+   Eigen::Vector3f colorResults2[] = {Eigen::Vector3f(.15,.2,.8), Eigen::Vector3f(.15,.2,.8), Eigen::Vector3f(.2,.2,.8)};
+
+   cout << "running planes.pov test" << endl;
+   UnitTest1_Helper2("resources/planes.pov", width, height, testPositions2, tResults2, colorResults2, 3);
+
 }
