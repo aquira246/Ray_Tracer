@@ -92,6 +92,10 @@ void UnitTest1_Helper2(string filename, int width, int height, int *tp, double *
       if (!checkDifference(clr, tc[i]) || fabs(t - tr[i]) > EPSILON) {
          cout << endl;
          cout << "Ray at (" << tp[i*2] << ", " << tp[i*2 + 1] << ")\n";
+         cout << "(" << laser.position(0) << ", " << laser.position(1) << ", " << laser.position(2) << ")\n";
+         cout << " and direction " << endl; 
+         cout << "(" << laser.direction(0) << ", " << laser.direction(1) << ", " << laser.direction(2) << ")\n\n";
+
          cout << "Color: r = " << clr(0) << " g = " << clr(1) << " b = " << clr(2) << endl;
          cout << "Should be: r = " << tc[i](0) << " g = " << tc[i](1) << " b = " << tc[i](2) << endl;
          cout << "distance of hit: " << t << endl;
