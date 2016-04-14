@@ -25,6 +25,7 @@ class Box: public Shape
         Eigen::Vector3f corner2;
 
         bool CalculateHit(Ray ray, double &t);
+        virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
 
     private:
 };

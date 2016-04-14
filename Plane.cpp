@@ -74,3 +74,7 @@ bool Plane::CalculateHit(Ray ray, double &t) {
    return false;
    */
 }
+
+Eigen::Vector3f Plane::GetNormal(Eigen::Vector3f hitPt) {
+   return normal;
+}

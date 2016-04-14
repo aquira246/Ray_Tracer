@@ -35,6 +35,11 @@ class Shape
          return 0;
       }
 
+      virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt) {
+         cout << "BAD! Should call Shape's Get Normal" << endl;
+         return Eigen::Vector3f(0,0,0);
+      }
+
    private:
 };
 

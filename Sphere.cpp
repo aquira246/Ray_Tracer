@@ -74,3 +74,9 @@ bool Sphere::CalculateHit(Ray ray, double &t) {
 
    return true;
 }
+
+Eigen::Vector3f Sphere::GetNormal(Eigen::Vector3f hitPt) {
+   Eigen::Vector3f ret = hitPt - center;
+   ret = ret/radius;
+   return ret;
+}

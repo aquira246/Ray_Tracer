@@ -85,3 +85,8 @@ bool Box::CalculateHit(Ray ray, double &t) {
    t = tmin;
    return true;
 }
+
+// TODO 
+Eigen::Vector3f Box::GetNormal(Eigen::Vector3f hitPt) {
+   return Eigen::Vector3f(0,0,1);
+}

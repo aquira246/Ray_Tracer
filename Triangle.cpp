@@ -67,3 +67,7 @@ void Triangle::Parse(Triangle &triangle) {
 bool Triangle::CalculateHit(Ray ray, double &t) {
    return false;
 }
+
+Eigen::Vector3f Triangle::GetNormal(Eigen::Vector3f hitPt) {
+   return normal;
+}

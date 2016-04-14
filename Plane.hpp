@@ -24,6 +24,7 @@ class Plane: public Shape
       // Shape has a center and radius
 
       bool CalculateHit(Ray ray, double &t);
+      virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
 
    private:
 };
