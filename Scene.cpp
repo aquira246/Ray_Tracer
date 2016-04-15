@@ -198,7 +198,9 @@ Eigen::Vector3f Scene::ComputeLighting(Shape *hitShape, Eigen::Vector3f &hitPt, 
     double Rough= numr/denom;
 
     // Calculate F
-    float R0 = 2.0; //TODO it is really pow(((r1 - r2)/(r1 + r2)), 2) where r1 = 1 and r2 = index of reflection for object 2
+    double r1 = 1; // index of refraction for the medium one (like Air,  which is 1)
+    double r2 = 2.01; // index of refraction for the medium two (like lead, which is 2)
+    float R0 = pow(((r1 - r2)/(r1 + r2)), 2);
     double Fresnel= R0 + (1.0 - R0)*pow(1.0 - VdotH, 5.0);   //schlick's approximation
 
     double ct = (Rough*Fresnel*Geom)/(4.0*NdotV*NdotL);
