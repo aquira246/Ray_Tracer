@@ -30,12 +30,18 @@ class Scene
 		std::vector<Plane> planes;
         std::vector<Box> boxes;
 
+        int getShader();
+        void setShader(int s);
+
 		Eigen::Vector3f ShootRayIntoScene(Ray ray, double &t);
 
     	static int Parse(FILE* infile, Scene &scene);
 
 	private:
+        int shader;
 		Eigen::Vector3f BackgroundColor;
+        Eigen::Vector3f BlinnPhong(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen::Vector3f &l, Eigen::Vector3f &d);
+        Eigen::Vector3f ToonSorta(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen::Vector3f &l, Eigen::Vector3f &d);
         Eigen::Vector3f ComputeLighting(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen::Vector3f &l, Eigen::Vector3f &d);
         bool CheckHit(Ray checkRay, Shape *&hitShape, double &t);
 };
