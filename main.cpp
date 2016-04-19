@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <math.h>
+#include <string>
 
 #include "Image.hpp"
 #include "Ray.hpp"
@@ -79,29 +80,38 @@ int main(int argc, char **argv)
 
    double t;
 
-   // create picture
-   Image *img = new Image(width, height);
-
-   // for every pixel find the color using scene
-   for (int y = 0; y < height; ++y)
+   for (unsigned int c = 0; c < scene.cameras.size(); ++c)
    {
-      for (int x = 0; x < width; ++x)
+      // create picture
+      Image *img = new Image(width, height);
+
+      // for every pixel find the color using scene
+      for (int y = 0; y < height; ++y)
       {
-         // calculate camera ray
-         Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.camera);
-         
-         // get the color that the ray provides
-         Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t);
+         for (int x = 0; x < width; ++x)
+         {
+            // calculate camera ray
+            Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
+            
+            // get the color that the ray provides
+            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t);
 
-         // set the image pixel to be that color
-         img->pixel(x, y, clr);
+            // set the image pixel to be that color
+            img->pixel(x, y, clr);
+         }
       }
-   }
 
-   // draw picture to sample.tga
-   string outfile = "sample.tga";
-   char *holdName = (char *)outfile.c_str();
-   img->WriteTga(holdName, true); 
+      // draw picture to sample.tga
+
+      string outfile;
+      if (c == 0) {
+         outfile = "sample.tga";
+      } else {
+         outfile = "sample" + to_string(c) + ".tga";
+      }
+      char *holdName = (char *)outfile.c_str();
+      img->WriteTga(holdName, true); 
+   }
    #endif
 
 	return 0;

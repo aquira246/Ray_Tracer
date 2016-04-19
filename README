@@ -1,28 +1,36 @@
 Ray Tracer program by Andrew Acosta
 
-PART 1
+PART 2
 
 How to make:
 to make the program, just type "make". This should result in a lot of object files and the rt executable
 to make the Unit test mode, type "make UNIT=1". This should result in object files and the rt_test executable
 
+BRDFs to choose from:
+0 = Blinn-Phong
+1 = Cook-Torrence using Cook-Torrence Geometry, (Trowbridge-Reitz) Distribution, and Schlick approximation for the Fresnel
+2 = An attempt at toon-shading. Still under construction. 
+
 How to run:
     Use this to create an image called sample.tga of the pov ray file
-    rt <width> <height> <input_scene.pov>" << endl;
+    rt <width> <height> <input_scene.pov> <BRDF>
+
+    Using this will run the ray tracer with Blinn-Phong automatically picked
+    rt <width> <height> <input_scene.pov>
 
     Using this will run the ray tracer with a width of 640 height of 480 by defualt
+    rt <input_scene.pov> <BRDF>
+
+    Using this will run the ray tracer with Blinn-Phong and a width of 640 height of 480 by defualt
     rt <input_scene.pov>
 
 Use "make clean" to remove all of the executables and object files
 
 Current Status:
-Ray Generation: Working
-Sphere Collision: Working
-Plane collision: Working
-Shading: only showing the color of the object
+Shading: 2 working BRDFS
+Shadows: Working
+Camera: Working
 
 Parsing: what is missing
-            transforms
-            ior
-            reflection
-            refraction
+        Cones
+        Transforms

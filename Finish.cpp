@@ -17,7 +17,7 @@ void Finish::Parse(Finish &finish) {
    finish.roughness = 0.05;
    finish.reflection = 0.0;
    finish.refraction = 0.0;
-   finish.ior = 1.0;
+   finish.ior = 2.0;
 
    while(1) { 
       GetToken();

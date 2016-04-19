@@ -23,12 +23,13 @@ class Scene
 		Scene();
 		~Scene();
 
-		Camera camera;
+		std::vector<Camera> cameras;
 		std::vector<Light> lights;
 		std::vector<Triangle> triangles;
 		std::vector<Sphere> spheres;
 		std::vector<Plane> planes;
         std::vector<Box> boxes;
+        std::vector<Shape *> shapes;
 
         int getShader();
         void setShader(int s);

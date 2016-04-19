@@ -39,7 +39,7 @@ void UnitTest1_Helper1() {
    for (int i = 0; i < 5; ++i)
    {
       // calculate camera ray
-      Ray laser = ComputeCameraRay(testPoints[i*2], testPoints[i*2 + 1], width, height, scene.camera);
+      Ray laser = ComputeCameraRay(testPoints[i*2], testPoints[i*2 + 1], width, height, scene.cameras[0]);
 
       int tp1 = testPositions[i*3];
       int tp2 = testPositions[i*3+1];
@@ -80,7 +80,7 @@ void UnitTest1_Helper2(string filename, int width, int height, int *tp, double *
    for (int i = 0; i < n; ++i)
    {
       // calculate camera ray
-      Ray laser = ComputeCameraRay(tp[i*2], tp[i*2 + 1], width, height, scene.camera);
+      Ray laser = ComputeCameraRay(tp[i*2], tp[i*2 + 1], width, height, scene.cameras[0]);
       Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t);
       if (!(tc[i](0) <= 1 && tc[i](1) <= 1 && tc[i](2) <= 1)) {
          clr *= 255;

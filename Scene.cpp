@@ -39,32 +39,43 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    GetToken();
 
    // For each list of objects have one that can be written to for push back
-   Triangle triangle;
-   Sphere sphere;
-   Plane plane;
-   Box box;
+   Triangle *triangle;
+   Sphere *sphere;
+   Plane *plane;
+   Box *box;
    Light light;
+   Camera cam;
 
    while(Token.id != T_EOF) {
       switch(Token.id) { 
          case T_CAMERA:
-            Camera::Parse(scene.camera);
+            Camera::Parse(cam);
+            cam.initialize();
+            scene.cameras.push_back(cam);
             break;
          case T_TRIANGLE:
-            Triangle::Parse(triangle);
-            scene.triangles.push_back(triangle);
+            triangle = new Triangle();
+            Triangle::Parse(*triangle);
+            scene.shapes.push_back(triangle);
+            scene.triangles.push_back(*triangle);
             break;
          case T_SPHERE:
-            Sphere::Parse(sphere);
-            scene.spheres.push_back(sphere);
+            sphere = new Sphere();
+            Sphere::Parse(*sphere);
+            scene.shapes.push_back(sphere);
+            scene.spheres.push_back(*sphere);
             break;
          case T_PLANE:
-            Plane::Parse(plane);
-            scene.planes.push_back(plane);
+            plane = new Plane();
+            Plane::Parse(*plane);
+            scene.shapes.push_back(plane);
+            scene.planes.push_back(*plane);
             break;
          case T_BOX:
-            Box::Parse(box);
-            scene.boxes.push_back(box);
+            box = new Box();
+            Box::Parse(*box);
+            scene.shapes.push_back(box);
+            scene.boxes.push_back(*box);
             break;
          case T_LIGHT_SOURCE:
             Light::Parse(light);
@@ -82,8 +93,7 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    cout << "Planes: " << scene.planes.size() << endl;
    cout << "Boxes: " << scene.boxes.size() << endl;
    cout << "Lights: " << scene.lights.size() << endl;
-
-   scene.camera.initialize();
+   cout << "Camera: " << scene.cameras.size() << endl;
 
    return numObjects;
 }
@@ -123,7 +133,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t) {
                 } else if (shader == 1) {
                     shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction);
                 } else if (shader == 2) {
-                    shading = brdf.ToonSorta(hitShape, hitPt, l, ray.direction);
+                    shading = brdf.ToonSorta(hitShape, hitPt, l, ray.direction, &retColor);
                 } else {
                     cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
                     shading = brdf.BlinnPhong(hitShape, hitPt, l, ray.direction);
@@ -145,30 +155,17 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t) {
     }
 }
 
-// TODO
 bool Scene::CheckHit(Ray checkRay, Shape *&hitShape, double &t) {
     bool hit = false;
     double checkingT = 0;
     t = -1;
 
-    // check if we hit a plane
-    for (unsigned int i = 0; i < planes.size(); ++i)
+    // check if we hit a shape
+    for (unsigned int i = 0; i < shapes.size(); ++i)
     {
-        if (planes[i].CalculateHit(checkRay, checkingT)) {
+        if ((*shapes[i]).CalculateHit(checkRay, checkingT)) {
             if (checkingT > 0 && (checkingT < t || !hit)) {
-                hitShape = &(planes[i]);
-                t = checkingT;
-                hit = true;
-            }
-        }
-    }
-
-    // check if we hit a sphere
-    for (unsigned int i = 0; i < spheres.size(); ++i)
-    {
-        if (spheres[i].CalculateHit(checkRay, checkingT)) {
-            if (checkingT > 0 && (checkingT < t || !hit)) {
-                hitShape = &(spheres[i]);
+                hitShape = shapes[i];
                 t = checkingT;
                 hit = true;
             }
