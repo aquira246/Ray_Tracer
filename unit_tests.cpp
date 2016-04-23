@@ -75,6 +75,7 @@ void UnitTest1_Helper2(string filename, int width, int height, int *tp, double *
    Scene scene = Scene();
    Scene::Parse(infile, scene);
    bool success = true;
+   scene.setShader(0);
 
    double t;
    for (int i = 0; i < n; ++i)
@@ -116,24 +117,14 @@ void UnitTest1() {
 
 
    cout << " ================== Beginning unit test 1 ================== " << endl;
-   cout << "Testing Ray Directions and Positions" << endl;
-   UnitTest1_Helper1();
 
-   int n = 5; //3;
-   int testPositions[] = {320, 239, 360, 219, 230, 239, 120, 349, 490, 119}; //{320, 240, 360, 219, 490, 360};
-   double tResults[] = {12.9902, 13.71856, 16.58557, 14.28708, -1}; //{12.9902f, 13.71856, -1}; // 0 should be -1
+
+   int n = 3; //3;
+   int testPositions[] = {120, 120, 295, 265, 420, 130};
+   double tResults[] = {17.8533, 12.247, 18.3556}; // 0 should be -1
    Eigen::Vector3f colorResults[] = {Eigen::Vector3f(255, 255, 255), Eigen::Vector3f(0,0,0), Eigen::Vector3f(64,64,64), 
                                     Eigen::Vector3f(31, 87, 143), Eigen::Vector3f(0,0,0)};
-   //{Eigen::Vector3f(255, 255, 255), Eigen::Vector3f(0,0,0), Eigen::Vector3f(0,0,0)};
 
-   cout << "running spheres.pov test" << endl;
-   UnitTest1_Helper2("resources/spheres.pov", width, height, testPositions, tResults, colorResults, n);
-
-   int testPositions2[] = {50, 240, 320, 50, 590, 240};
-   double tResults2[] = {10.213, 16.3394, 12.2212};
-   Eigen::Vector3f colorResults2[] = {Eigen::Vector3f(.15,.2,.8), Eigen::Vector3f(.15,.2,.8), Eigen::Vector3f(.2,.2,.8)};
-
-   cout << "running planes.pov test" << endl;
-   UnitTest1_Helper2("resources/planes.pov", width, height, testPositions2, tResults2, colorResults2, 3);
-
+   cout << "running simple.pov test" << endl;
+   UnitTest1_Helper2("resources/simple.pov", width, height, testPositions, tResults, colorResults, n);
 }

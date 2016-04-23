@@ -66,20 +66,21 @@ void Triangle::Parse(Triangle &triangle) {
 // http://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 bool Triangle::CalculateHit(Ray ray, double &t) {
    double u, v;
-   Eigen::Vector3f dir = ray.direction;
-   float result;
-
+   t = 0;
    // first check for circumsphere hit
    Eigen::Vector3f dist = ray.position - center;
 
-   double A = dir.dot(dir);
-   double B = dist.dot(2*dir);
+   double A = ray.direction.dot(ray.direction);
+   double B = (2*ray.direction).dot(dist);
    double C = dist.dot(dist) - radius*radius;
 
    Eigen::Vector3f quad = QuadraticFormula(A, B, C);
+   float result;
 
-   //SHOULD BE AN ERROR
-   if (quad(0) == 0) return false;
+   if (quad(0) == 0) {
+      //SHOULD BE AN ERROR
+      result = 0;
+   }
 
    if (quad(0) == 1) {
       result = quad(1);
@@ -92,12 +93,14 @@ bool Triangle::CalculateHit(Ray ray, double &t) {
    }
 
    // failure to even hit the circumsphere
-   if (result < 0) return false;
+   if (result < 0) {
+      return false;
+   }
 
-   Eigen::Vector3f AtoB = b - a;
-   Eigen::Vector3f AtoC = c - a;
-   Eigen::Vector3f pvec = dir.cross(AtoC);
-   double det = AtoB.dot(pvec);
+   Eigen::Vector3f ab = b - a;
+   Eigen::Vector3f ac = c - a;
+   Eigen::Vector3f pvec = ray.direction.cross(ac);
+   double det = ab.dot(pvec);
 
    #ifdef CULLING
    // if the determinant is negative the triangle is backfacing
@@ -113,11 +116,11 @@ bool Triangle::CalculateHit(Ray ray, double &t) {
    u = tvec.dot(pvec) * invDet;
    if (u < 0 || u > 1) return false;
 
-   Eigen::Vector3f qvec = tvec.cross(AtoB);
-   v = dir.dot(qvec) * invDet;
+   Eigen::Vector3f qvec = tvec.cross(ab);
+   v = ray.direction.dot(qvec) * invDet;
    if (v < 0 || u + v > 1) return false;
 
-   t = AtoC.dot(qvec) * invDet;
+   t = ac.dot(qvec) * invDet;
 
    return true;
 }
