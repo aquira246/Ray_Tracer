@@ -14,6 +14,7 @@
 
 using namespace std;
 
+const int MAX_REFLECTIONS = 5;
 int width = 640;
 int height = 480;
 int shader = 0;
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
             Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
             
             // get the color that the ray provides
-            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t);
+            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t, 1, true, MAX_REFLECTIONS);
 
             // set the image pixel to be that color
             img->pixel(x, y, clr);

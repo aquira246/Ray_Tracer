@@ -57,7 +57,8 @@ Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen:
 
 // http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
 Eigen::Vector3f BRDF::CookTorrance(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen::Vector3f &l, 
-                                        Eigen::Vector3f &d, Eigen::Vector3f &lightCol) {
+                                        Eigen::Vector3f &d, Eigen::Vector3f &lightCol, 
+                                        double curIOR, double newIOR) {
     Eigen::Vector3f v = -d;
     Eigen::Vector3f h = (l + v).normalized();
     Eigen::Vector3f n = (hitShape->GetNormal(hitPt)).normalized();
@@ -89,8 +90,8 @@ Eigen::Vector3f BRDF::CookTorrance(Shape *hitShape, Eigen::Vector3f &hitPt, Eige
     // float Rough= numr/denom;
 
     // // Calculate F
-    double r1 = 1; // index of refraction for the medium one (like Air,  which is 1)
-    double r2 = hitShape->finish.ior; // index of refraction for the medium two (like lead, which is 2)
+    double r1 = curIOR; // index of refraction for the medium one (like Air,  which is 1)
+    double r2 = newIOR; // index of refraction for the medium two (like lead, which is 2)
     float R0 = pow(((r1 - r2)/(r1 + r2)), 2);
     float Fresnel= R0 + (1.0 - R0)*pow(1.0 - VdotH, 5.0);   //schlick's approximation
 

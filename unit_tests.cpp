@@ -82,7 +82,7 @@ void UnitTest1_Helper2(string filename, int width, int height, int *tp, double *
    {
       // calculate camera ray
       Ray laser = ComputeCameraRay(tp[i*2], tp[i*2 + 1], width, height, scene.cameras[0]);
-      Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t);
+      Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t, 1, true, 5);
       if (!(tc[i](0) <= 1 && tc[i](1) <= 1 && tc[i](2) <= 1)) {
          clr *= 255;
          clr(0) = ceil(clr(0));

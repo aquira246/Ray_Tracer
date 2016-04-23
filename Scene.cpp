@@ -98,7 +98,7 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    return numObjects;
 }
 
-Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t) {
+Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, bool inAir, int bouncesLeft) {
     Shape *hitShape = NULL;
     Shape *shadowShape = NULL;
     BRDF brdf = BRDF();
@@ -119,34 +119,76 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t) {
         {
             // create the shadow ray to check if the spot is in shadow
             Eigen::Vector3f l = lights[i].location - hitPt;
-            double dist = l.norm();
+            double lightDistance = l.norm();
             l.normalize();
             Ray shadowRay = Ray(hitPt + l*EPSILON, l);  // epsilon test for shadow ray
+
+            #ifdef UNIT_TEST
+            cout << "\nShadow feeler: " << "(" << shadowRay.direction(0) << ", " 
+                                        << shadowRay.direction(1) << ", " 
+                                        << shadowRay.direction(2) << ")\n";
+            #endif
             
+            Eigen::Vector3f shading = Eigen::Vector3f(0,0,0);
+            Eigen::Vector3f reflectColor = Eigen::Vector3f(0,0,0);
+            Eigen::Vector3f refractColor = Eigen::Vector3f(0,0,0);
+
             // if the spot is not in shadow because there is no object between it and the light
-            if(!CheckHit(shadowRay, shadowShape, s) || s > dist) {
-                Eigen::Vector3f shading;
+            if(!CheckHit(shadowRay, shadowShape, s) || s > lightDistance) {
+                Eigen::Vector3f lightCol = Eigen::Vector3f(lights[i].color[0], lights[i].color[1], lights[i].color[2]);
 
                 // pick our shader
                 if (shader == 0) {
-                    shading = brdf.BlinnPhong(hitShape, hitPt, l, ray.direction);
+                    shading = brdf.BlinnPhong(hitShape, hitPt, l, ray.direction, lightCol);
                 } else if (shader == 1) {
-                    shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction);
+                    if (inAir)
+                        shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, ior, hitShape->finish.ior);
+                    else
+                        shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, hitShape->finish.ior, ior);
                 } else if (shader == 2) {
-                    shading = brdf.ToonSorta(hitShape, hitPt, l, ray.direction, &retColor);
+                    shading = brdf.ToonSorta(hitShape, hitPt, l, ray.direction, lightCol, &retColor);
                 } else {
                     cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
-                    shading = brdf.BlinnPhong(hitShape, hitPt, l, ray.direction);
+                    shading = brdf.BlinnPhong(hitShape, hitPt, l, lightCol, ray.direction);
+                }
+            }
+
+            // if we can still bounce around for reflection and refraction
+            if (bouncesLeft > 0) {
+                Eigen::Vector3f hitNormal = hitShape->GetNormal(hitPt);
+
+                // if we have reflection calculate it
+                if (hitShape->finish.reflection > 0) {
+                    // do reflection
+                    Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
+                    double temp = 0;
+                    reflectColor = ShootRayIntoScene(reflRay, temp, ior, !inAir, bouncesLeft - 1);
                 }
 
-                shading[0] *= lights[i].color[0];
-                shading[1] *= lights[i].color[1];
-                shading[2] *= lights[i].color[2];
+                // if we have refraction calculate it
+                if (hitShape->finish.refraction > 0) {
+                    // do refraction
+                    Ray refrRay;
+                    if (inAir) {
+                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, ior, hitShape->finish.ior);
+                    } else {
+                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, hitShape->finish.ior, ior);
+                    }
 
-                retColor += shading;
+                    double temp = 0;
+                    refractColor = ShootRayIntoScene(refrRay, temp, ior, !inAir, bouncesLeft - 1);
+                }
             }
+
+            retColor += (1 - (hitShape->finish.reflection + hitShape->finish.refraction))*shading
+                        + hitShape->finish.reflection*reflectColor
+                        + hitShape->finish.refraction*refractColor;
         }
     
+        retColor[0] = fmin(retColor[0], 1.0f);
+        retColor[1] = fmin(retColor[1], 1.0f);
+        retColor[2] = fmin(retColor[2], 1.0f);
+
         // compute lighting
         return retColor;
     } else {

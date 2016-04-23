@@ -40,7 +40,7 @@ void Finish::Parse(Finish &finish) {
          break;
       case T_REFLECTION:
          finish.reflection = ParseDouble();
-         assert(finish.reflection == 0 && finish.reflection == 1);
+         assert(finish.reflection >= 0 && finish.reflection <= 1);
          break;
       case T_REFRACTION:
          finish.refraction = ParseDouble();
