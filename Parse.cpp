@@ -93,8 +93,22 @@ void ParseRGBColor(Eigen::Vector4f &c) {
    c[1] = ParseDouble();
    ParseComma();
    c[2] = ParseDouble();
-   c[3] = 1.0;
-   ParseRightAngle();
+
+   GetToken();
+   if (Token.id == T_COMMA) {
+      c[3] = ParseDouble();
+      ParseRightAngle();
+   } else {
+      c[3] = 1.0;
+      
+      // parse right angle
+      if(Token.id != T_RIGHT_ANGLE ) {
+         string msg;
+         msg = "Expected >   Found " + TokenToString(Token.id);
+         Error(msg);
+      }
+   }
+
 }
 
 void ParseColor(Eigen::Vector4f &c) { 

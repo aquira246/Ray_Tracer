@@ -101,7 +101,6 @@ int Scene::Parse(FILE* infile, Scene &scene) {
 Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, bool inAir, int bouncesLeft) {
     Shape *hitShape = NULL;
     Shape *shadowShape = NULL;
-    BRDF brdf = BRDF();
 
     // see if ray hits anything
     if (CheckHit(ray, hitShape, t)) {
@@ -135,6 +134,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, bool in
 
             // if the spot is not in shadow because there is no object between it and the light
             if(!CheckHit(shadowRay, shadowShape, s) || s > lightDistance) {
+                BRDF brdf = BRDF();
                 Eigen::Vector3f lightCol = Eigen::Vector3f(lights[i].color[0], lights[i].color[1], lights[i].color[2]);
 
                 // pick our shader

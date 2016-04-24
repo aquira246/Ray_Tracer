@@ -51,6 +51,7 @@ Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen:
     ret[1] *= lightCol[1];
     ret[2] *= lightCol[2];
 
+
     return ret;
 }
 
