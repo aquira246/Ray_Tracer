@@ -95,7 +95,7 @@ int main(int argc, char **argv)
             Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
             
             // get the color that the ray provides
-            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t, 1, true, MAX_REFLECTIONS);
+            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t, 1, NULL, MAX_REFLECTIONS);
 
             // set the image pixel to be that color
             img->pixel(x, y, clr);

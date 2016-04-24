@@ -98,7 +98,7 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    return numObjects;
 }
 
-Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, bool inAir, int bouncesLeft) {
+Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *curShape, int bouncesLeft) {
     Shape *hitShape = NULL;
     Shape *shadowShape = NULL;
 
@@ -141,8 +141,10 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, bool in
                 if (shader == 0) {
                     shading = brdf.BlinnPhong(hitShape, hitPt, l, ray.direction, lightCol);
                 } else if (shader == 1) {
-                    if (inAir)
+                    if (curShape == NULL)
                         shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, ior, hitShape->finish.ior);
+                    else if(curShape != hitShape)
+                        shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, curShape->finish.ior, hitShape->finish.ior);
                     else
                         shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, hitShape->finish.ior, ior);
                 } else if (shader == 2) {
@@ -162,21 +164,30 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, bool in
                     // do reflection
                     Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
                     double temp = 0;
-                    reflectColor = ShootRayIntoScene(reflRay, temp, ior, !inAir, bouncesLeft - 1);
+
+                    if (hitShape == curShape)
+                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, NULL, bouncesLeft - 1);
+                    else   
+                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, hitShape, bouncesLeft - 1);
                 }
 
                 // if we have refraction calculate it
                 if (hitShape->finish.refraction > 0) {
                     // do refraction
                     Ray refrRay;
-                    if (inAir) {
+                    if (curShape == NULL)
                         refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, ior, hitShape->finish.ior);
-                    } else {
+                    else if(curShape != hitShape)
+                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, curShape->finish.ior, hitShape->finish.ior);
+                    else
                         refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, hitShape->finish.ior, ior);
-                    }
 
                     double temp = 0;
-                    refractColor = ShootRayIntoScene(refrRay, temp, ior, !inAir, bouncesLeft - 1);
+
+                    if (hitShape == curShape)
+                        refractColor = ShootRayIntoScene(refrRay, temp, ior, NULL, bouncesLeft - 1);
+                    else   
+                        refractColor = ShootRayIntoScene(refrRay, temp, ior, hitShape, bouncesLeft - 1);
                 }
             }
 

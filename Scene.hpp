@@ -34,7 +34,7 @@ class Scene
         int getShader();
         void setShader(int s);
 
-		Eigen::Vector3f ShootRayIntoScene(Ray ray, double &t, double ior, bool inAir, int bouncesLeft);
+		Eigen::Vector3f ShootRayIntoScene(Ray ray, double &t, double ior, Shape *curShape, int bouncesLeft);
 
     	static int Parse(FILE* infile, Scene &scene);
 
