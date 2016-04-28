@@ -110,6 +110,8 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
         // set the color to ambient
         Eigen::Vector3f baseColor = hitShape->color.head<3>();
         Eigen::Vector3f retColor = baseColor*hitShape->finish.ambient;
+        double reflectVal = hitShape->finish.reflection;
+        double refractVal = hitShape->finish.refraction;
 
         double s = -1; // shadow distance
 
@@ -132,8 +134,58 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
             Eigen::Vector3f reflectColor = Eigen::Vector3f(0,0,0);
             Eigen::Vector3f refractColor = Eigen::Vector3f(0,0,0);
 
+            // if we can still bounce around for reflection and refraction
+            if (bouncesLeft > 0) {
+                Eigen::Vector3f hitNormal = hitShape->GetNormal(hitPt);
+
+                // if we have refraction calculate it
+                if (refractVal > 0) {
+                    // do refraction
+                    Ray refrRay;
+                    bool totalReflection = false;
+
+                    if (curShape == NULL)
+                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, ior, 
+                                                        hitShape->finish.ior, &totalReflection);
+                    else if(curShape != hitShape)
+                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, curShape->finish.ior, 
+                                                        hitShape->finish.ior, &totalReflection);
+                    else
+                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, hitShape->finish.ior, 
+                                                        ior, &totalReflection);
+
+                    double temp = 0;
+
+                    if (!totalReflection) {
+                        if (hitShape == curShape)
+                            refractColor = ShootRayIntoScene(refrRay, temp, ior, NULL, bouncesLeft - 1);
+                        else   
+                            refractColor = ShootRayIntoScene(refrRay, temp, ior, hitShape, bouncesLeft - 1);
+                    } else {
+                        reflectVal += refractVal;
+                        refractVal = 0;
+                    }
+                }
+
+                // if we have reflection calculate it
+                if (reflectVal > 0) {
+                    // do reflection
+                    Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
+                    double temp = 0;
+
+                    if (hitShape == curShape)
+                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, NULL, bouncesLeft - 1);
+                    else   
+                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, hitShape, bouncesLeft - 1);
+                }
+            }
+
             // if the spot is not in shadow because there is no object between it and the light
-            if(!CheckHit(shadowRay, shadowShape, s) || s > lightDistance) {
+            s = -1;
+            bool inShadow = (CheckHit(shadowRay, shadowShape, s) || s > lightDistance);
+
+            if(!inShadow) {
+                
                 BRDF brdf = BRDF();
                 Eigen::Vector3f lightCol = Eigen::Vector3f(lights[i].color[0], lights[i].color[1], lights[i].color[2]);
 
@@ -155,45 +207,9 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
                 }
             }
 
-            // if we can still bounce around for reflection and refraction
-            if (bouncesLeft > 0) {
-                Eigen::Vector3f hitNormal = hitShape->GetNormal(hitPt);
-
-                // if we have reflection calculate it
-                if (hitShape->finish.reflection > 0) {
-                    // do reflection
-                    Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
-                    double temp = 0;
-
-                    if (hitShape == curShape)
-                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, NULL, bouncesLeft - 1);
-                    else   
-                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, hitShape, bouncesLeft - 1);
-                }
-
-                // if we have refraction calculate it
-                if (hitShape->finish.refraction > 0) {
-                    // do refraction
-                    Ray refrRay;
-                    if (curShape == NULL)
-                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, ior, hitShape->finish.ior);
-                    else if(curShape != hitShape)
-                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, curShape->finish.ior, hitShape->finish.ior);
-                    else
-                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, hitShape->finish.ior, ior);
-
-                    double temp = 0;
-
-                    if (hitShape == curShape)
-                        refractColor = ShootRayIntoScene(refrRay, temp, ior, NULL, bouncesLeft - 1);
-                    else   
-                        refractColor = ShootRayIntoScene(refrRay, temp, ior, hitShape, bouncesLeft - 1);
-                }
-            }
-
-            retColor += (1 - (hitShape->finish.reflection + hitShape->finish.refraction))*shading
-                        + hitShape->finish.reflection*reflectColor
-                        + hitShape->finish.refraction*refractColor;
+            retColor += (1 - (reflectVal + refractVal))*shading
+                        + reflectVal*reflectColor
+                        + refractVal*refractColor;
         }
     
         retColor[0] = fmin(retColor[0], 1.0f);

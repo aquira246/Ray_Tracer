@@ -20,6 +20,7 @@ class Ray
 
 Ray ComputeCameraRay(int i, int j, int width, int height, Camera cam);
 Ray ComputeReflectionRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, Eigen::Vector3f rayDirection);
-Ray ComputeRefractedRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, Eigen::Vector3f rayDirection, double ior1, double ior2);
+Ray ComputeRefractedRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, Eigen::Vector3f rayDirection, 
+                        double ior1, double ior2, bool *totalReflection);
 
 #endif

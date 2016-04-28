@@ -29,6 +29,7 @@ int main(int argc, char **argv)
    
    #else
    FILE* infile;
+   char *fileName;
    scene = Scene();
  
    if(argc < 2 || argc > 5) {
@@ -40,20 +41,22 @@ int main(int argc, char **argv)
    }
 
    if(argc == 2) {
-      infile = fopen(argv[1], "r");
+      fileName = argv[1];
    } else if (argc == 3) {
-      infile = fopen(argv[1], "r");
+      fileName = argv[1];
       shader = stoi(argv[2]);
    } else if (argc == 4) {
       width = stoi(argv[1]);
       height = stoi(argv[2]);
-      infile = fopen(argv[3], "r");
+      fileName = argv[3];
    } else {
       width = stoi(argv[1]);
       height = stoi(argv[2]);
-      infile = fopen(argv[3], "r");
+      fileName = argv[3];
       shader = stoi(argv[4]);
    }
+
+   infile = fopen(fileName, "r");
 
    string shaderName = "";
 
@@ -103,13 +106,14 @@ int main(int argc, char **argv)
       }
 
       // draw picture to sample.tga
-
-      string outfile;
+      string outfile = fileName;
       if (c == 0) {
-         outfile = "sample.tga";
+         outfile = outfile + ".tga";
       } else {
-         outfile = "sample" + to_string(c) + ".tga";
+         outfile = outfile + to_string(c) + ".tga";
       }
+
+      cout << "Writing to: " << outfile << endl;
       char *holdName = (char *)outfile.c_str();
       img->WriteTga(holdName, true); 
    }

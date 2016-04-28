@@ -12,9 +12,9 @@ endif
 
 ifdef UNIT
 	CFLAGS += -D UNIT_TEST
-	name +=rt_test
+	name +=raytrace_test
 else
-	name += rt
+	name += raytrace
 endif
 
 all: $(OBJECT)
@@ -31,23 +31,23 @@ all: $(OBJECT)
 	touch $@
 
 simple:
-	./rt 640 480 resources/simple.pov
+	./raytrace 640 480 resources/simple.pov
 ball:
-	./rt resources/bunny_small.pov
+	./raytrace resources/bunny_small.pov
 tri:
-	./rt resources/bunny_small_tris.pov
+	./raytrace resources/bunny_small_tris.pov
 good:
-	./rt 640 480 resources/simp_cam.pov
+	./raytrace 640 480 resources/simp_cam.pov
 good2:
-	./rt 640 480 resources/simp_cam2.pov
+	./raytrace 640 480 resources/simp_cam2.pov
 clean:
-	rm -f *~ *.o a.out rt rt_test
+	rm -f *~ *.o a.out raytrace raytrace_test
 clear: $(OBJECT)
 	clear
-	rm -f *~ *.o a.out rt rt_test
-	$(CC) $(CFLAGS) $(INC) *.cpp $(LIB) -o rt
+	rm -f *~ *.o a.out raytrace raytrace_test
+	$(CC) $(CFLAGS) $(INC) *.cpp $(LIB) -o raytrace
 fast: $(OBJECT)
-	rm -f *~ *.o a.out rt rt_test
+	rm -f *~ *.o a.out raytrace raytrace_test
 	clear
-	$(CC) $(CFLAGS) $(INC) *.cpp $(LIB) -o rt
-	./rt resources/bunny_small.pov
+	$(CC) $(CFLAGS) $(INC) *.cpp $(LIB) -o raytrace
+	./raytrace resources/bunny_small.pov

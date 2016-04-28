@@ -45,17 +45,40 @@ Ray ComputeReflectionRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, E
 }
 
 // help from https://www.cs.unc.edu/~rademach/xroads-RT/RTarticle.html
-Ray ComputeRefractedRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, Eigen::Vector3f rayDirection, double ior1, double ior2) {
+Ray ComputeRefractedRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, Eigen::Vector3f rayDirection, 
+                        double ior1, double ior2, bool *totalReflection) {
+
    double iorDiv = ior1/ior2;
+   Eigen::Vector3f N = surfaceNormal;
+
+   // might need? not sure yet
+   if (N.dot(rayDirection) > 0) {
+      N = -N;
+   }
+
 
    // angle between normal an reflected ray
-   double c1 = -surfaceNormal.dot(rayDirection);
+   double c1 = -N.dot(rayDirection);
+
+   // get the radicand and see if it is imaginary
+   double radicand = 1 - iorDiv*iorDiv*(1 - c1*c1); 
+
+   if (radicand < 0) {
+      // total internal reflection, no refraction
+      *totalReflection = true;
+      return Ray();
+   }
+
+   *totalReflection = false;
 
    // c2 is the angle between the reversed normal and the refracted ray
-   double c2 = sqrt(1 - iorDiv*iorDiv*(1 - c1*c1));
+   double c2 = sqrt(radicand);
 
    // calculate the refracted ray
-   Eigen::Vector3f refracted = (iorDiv*rayDirection) + (iorDiv*c1 - c2)*surfaceNormal ;
+   Eigen::Vector3f refracted = (iorDiv*rayDirection) + (iorDiv*c1 - c2)*N ;
+
+   // this is the in class version. The one I'm using seems more efficient since it does less math with the vector3f
+   // Eigen::Vector3f refracted = iorDiv*(rayDirection + N*c1) - c2*N;
 
    // epsilon shift the starting point
    return Ray(hitPt + refracted*EPSILON, refracted);

@@ -1,5 +1,5 @@
-rt
-rt_test
+raytrace
+raytrace_test
 *.exe
 *.o
 a.out
