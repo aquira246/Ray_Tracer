@@ -25,6 +25,10 @@ class Sphere: public Shape
       bool CalculateHit(Ray ray, double &t);
       virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
 
+      virtual int GetShape() {
+         return SPHERE_ID;
+      }
+
 	private:
 };
 

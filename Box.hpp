@@ -23,6 +23,9 @@ class Box: public Shape
         Eigen::Vector3f normal;
         Eigen::Vector3f corner1;
         Eigen::Vector3f corner2;
+        virtual int GetShape() {
+            return BOX_ID;
+        }
 
         bool CalculateHit(Ray ray, double &t);
         virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);

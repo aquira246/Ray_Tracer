@@ -63,64 +63,44 @@ void Triangle::Parse(Triangle &triangle) {
    triangle.Initialize();
 }
 
-// http://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
+// help from 
+// http://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection
+// same method as what we did in class but cleaner!
 bool Triangle::CalculateHit(Ray ray, double &t) {
    double u, v;
-   t = 0;
-   // first check for circumsphere hit
-   Eigen::Vector3f dist = ray.position - center;
-
-   double A = ray.direction.dot(ray.direction);
-   double B = (2*ray.direction).dot(dist);
-   double C = dist.dot(dist) - radius*radius;
-
-   Eigen::Vector3f quad = QuadraticFormula(A, B, C);
-   float result;
-
-   if (quad(0) == 0) {
-      //SHOULD BE AN ERROR
-      result = 0;
-   }
-
-   if (quad(0) == 1) {
-      result = quad(1);
-   }
-
-   if (fabs(quad(1)) <= fabs(quad(2))) {
-      result = quad(1);
-   } else {
-      result = quad(2);
-   }
-
-   // failure to even hit the circumsphere
-   if (result < 0) {
-      return false;
-   }
-
    Eigen::Vector3f ab = b - a;
    Eigen::Vector3f ac = c - a;
-   Eigen::Vector3f pvec = ray.direction.cross(ac);
-   double det = ab.dot(pvec);
 
-   #ifdef CULLING
-   // if the determinant is negative the triangle is backfacing
-   // if the determinant is close to 0, the ray misses the triangle
-   if (det < kEpsilon) return false;
-   #else
-   // ray and triangle are parallel if det is close to 0
-   if (fabs(det) < kEpsilon) return false;
-   #endif
-   double invDet = 1 / det;
+   // get the vector perpendicular to D and pt a to pt c
+   Eigen::Vector3f pvec = ray.direction.cross(ac);
+
+   // get the angle between the pvec and pt a to pt b
+   // this is the angle between the ray and triangle
+   float det = ab.dot(pvec);
+
+   // if the ray and triangle are pretty parallel, return false
+   // this is the case when the determinent is really close to 0
+   if (fabs(det) < kEpsilon)
+      return false;
+
+   float inverseDet = 1.0/det;
 
    Eigen::Vector3f tvec = ray.position - a;
-   u = tvec.dot(pvec) * invDet;
-   if (u < 0 || u > 1) return false;
+
+   u = tvec.dot(pvec)*inverseDet;
+
+   // 0 < u < 1 also u + v == 1
+   if (u < 0 || u > 1) 
+      return false;
 
    Eigen::Vector3f qvec = tvec.cross(ab);
-   v = ray.direction.dot(qvec) * invDet;
-   if (v < 0 || u + v > 1) return false;
+   v = ray.direction.dot(qvec)*inverseDet;
 
-   t = ac.dot(qvec) * invDet;
+   // 0 < v < 1 also u + v == 1 
+   if (v < 0 || u + v > 1)
+      return false;
+
+   t = ac.dot(qvec)*inverseDet;
 
    return true;
 }

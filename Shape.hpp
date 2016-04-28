@@ -11,6 +11,12 @@
 #include "Finish.hpp"
 #include "Ray.hpp"
 
+#define SHAPE_ID 0
+#define SPHERE_ID 1
+#define TRIANGLE_ID 2
+#define PLANE_ID 3
+#define BOX_ID 4
+
 class Shape
 {
    public:
@@ -38,6 +44,10 @@ class Shape
       virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt) {
          cout << "BAD! Should call Shape's Get Normal" << endl;
          return Eigen::Vector3f(0,0,0);
+      }
+
+      virtual int GetShape() {
+         return SHAPE_ID;
       }
 
    private:

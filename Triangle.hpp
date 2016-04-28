@@ -22,6 +22,9 @@ class Triangle: public Shape
       static void Parse(Triangle &triangle);
       bool CalculateHit(Ray ray, double &t);
       virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
+      virtual int GetShape() {
+         return TRIANGLE_ID;
+      }
 
    protected:
    // Parts of a triangle

@@ -26,6 +26,10 @@ class Plane: public Shape
       bool CalculateHit(Ray ray, double &t);
       virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
 
+      virtual int GetShape() {
+         return TRIANGLE_ID;
+      }
+
    private:
 };
 
