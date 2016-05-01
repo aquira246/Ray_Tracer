@@ -34,14 +34,14 @@ class Scene
         int getShader();
         void setShader(int s);
 
-		Eigen::Vector3f ShootRayIntoScene(Ray ray, double &t, double ior, Shape *curShape, int bouncesLeft);
+		Eigen::Vector3f ShootRayIntoScene(Ray ray, double &t, double prevIOR, double curIOR, int bouncesLeft);
+        bool CheckHit(Ray checkRay, Shape *&hitShape, double &t);   // in public for testing reasons
 
     	static int Parse(FILE* infile, Scene &scene);
 
 	private:
         int shader;
 		Eigen::Vector3f BackgroundColor;
-        bool CheckHit(Ray checkRay, Shape *&hitShape, double &t);
 };
 
 #endif

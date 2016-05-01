@@ -27,7 +27,7 @@ class Plane: public Shape
       virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
 
       virtual int GetShape() {
-         return TRIANGLE_ID;
+         return PLANE_ID;
       }
 
    private:

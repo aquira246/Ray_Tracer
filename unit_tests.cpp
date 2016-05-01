@@ -82,7 +82,7 @@ void UnitTest1_Helper2(string filename, int width, int height, int *tp, double *
    {
       // calculate camera ray
       Ray laser = ComputeCameraRay(tp[i*2], tp[i*2 + 1], width, height, scene.cameras[0]);
-      Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t, 1, NULL, 5);
+      Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t, 1, 1, 5);
       if (!(tc[i](0) <= 1 && tc[i](1) <= 1 && tc[i](2) <= 1)) {
          clr *= 255;
          clr(0) = ceil(clr(0));
@@ -105,10 +105,67 @@ void UnitTest1_Helper2(string filename, int width, int height, int *tp, double *
       }
    }
 
+
+
    if (success)
       cout << "Successful test\n" << endl;
    else
       cout << "Unit Test 1 Failed\n" << endl;
+}
+
+void mytest(string filename) {
+   FILE* infile = fopen(filename.c_str(), "r");
+   Scene scene = Scene();
+   Scene::Parse(infile, scene);
+   scene.setShader(0);
+
+   if (scene.spheres.size() == 0)
+      return;
+
+   Sphere s = scene.spheres[0];
+   double rad = s.radius;
+
+   cout << "Sphere at position (" << s.center[0] << ", " << s.center[1] << ", " << s.center[2] <<")    radius: " << rad << endl;
+
+   Shape *hitShape = NULL;
+
+   Ray laser = Ray(s.center, Eigen::Vector3f(0,0,1));
+   laser.position[2] -= rad/2;
+   double t = -1;
+
+
+   bool hasHit = scene.CheckHit(laser, hitShape, t);
+
+   
+   cout << "firing laser 1 = ";
+   cout << "(" << laser.position[0] << ", " << laser.position[1] << ", " << laser.position[2] << ")   ";
+   cout << "(" << laser.direction[0] << ", " << laser.direction[1] << ", " << laser.direction[2] << ")\n";
+   if (hasHit) {
+      cout << "hit 1: object hit of type " << hitShape->GetShape() << endl;
+   }
+
+   laser = Ray(s.center, Eigen::Vector3f(0,0,1));
+
+   hasHit = scene.CheckHit(laser, hitShape, t);
+
+   cout << "firing laser 2 = ";
+   cout << "(" << laser.position[0] << ", " << laser.position[1] << ", " << laser.position[2] << ")   ";
+   cout << "(" << laser.direction[0] << ", " << laser.direction[1] << ", " << laser.direction[2] << ")\n";
+   if (hasHit) {
+      cout << "hit 2: object hit of type " << hitShape->GetShape() << endl;
+   }
+
+   laser = Ray(s.center, Eigen::Vector3f(0,0,1));
+   laser.position[2] += rad/2;
+
+   hasHit = scene.CheckHit(laser, hitShape, t);
+
+   cout << "firing laser 3 = ";
+   cout << "(" << laser.position[0] << ", " << laser.position[1] << ", " << laser.position[2] << ")   ";
+   cout << "(" << laser.direction[0] << ", " << laser.direction[1] << ", " << laser.direction[2] << ")\n";
+   if (hasHit) {
+      cout << "hit 3: object hit of type " << hitShape->GetShape() << endl;
+   }
 }
 
 void UnitTest1() {
@@ -119,12 +176,13 @@ void UnitTest1() {
    cout << " ================== Beginning unit test 1 ================== " << endl;
 
 
-   int n = 3; //3;
-   int testPositions[] = {120, 120, 295, 265, 420, 130};
-   double tResults[] = {17.8533, 12.247, 18.3556}; // 0 should be -1
-   Eigen::Vector3f colorResults[] = {Eigen::Vector3f(255, 255, 255), Eigen::Vector3f(0,0,0), Eigen::Vector3f(64,64,64), 
-                                    Eigen::Vector3f(31, 87, 143), Eigen::Vector3f(0,0,0)};
+   // int n = 1; //3;
+   // int testPositions[] = {320, 240};
+   // double tResults[] = {17.8533}; // 0 should be -1
+   // Eigen::Vector3f colorResults[] = {Eigen::Vector3f(255, 255, 255), Eigen::Vector3f(0,0,0), Eigen::Vector3f(64,64,64)};
 
-   cout << "running simple.pov test" << endl;
-   UnitTest1_Helper2("resources/simple.pov", width, height, testPositions, tResults, colorResults, n);
+   // cout << "running simple.pov test" << endl;
+   // UnitTest1_Helper2("resources/simple_refract.pov", width, height, testPositions, tResults, colorResults, n);
+
+   mytest("resources/simple_refract.pov");
 }

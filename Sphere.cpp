@@ -66,10 +66,12 @@ bool Sphere::CalculateHit(Ray ray, double &t) {
 
    if (quad(0) == 1) {
       t = (double)quad(1);
-   } else if (fabs(quad(1)) <= fabs(quad(2))) {
-      t = (double)quad(1);
    } else {
-      t = (double)quad(2);
+      if (quad(1) >= 0 && quad(2) >= 0) {
+         t = (double)(min(quad(1), quad(2)));
+      } else {
+         t = (double)(max(quad(1), quad(2)));
+      }
    }
 
    return true;

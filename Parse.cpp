@@ -99,7 +99,7 @@ void ParseRGBColor(Eigen::Vector4f &c) {
       c[3] = ParseDouble();
       ParseRightAngle();
    } else {
-      c[3] = 1.0;
+      c[3] = 0.0;
       
       // parse right angle
       if(Token.id != T_RIGHT_ANGLE ) {

@@ -6,6 +6,7 @@
 #include <vector>
 #include <math.h>
 #include <string>
+#include <stack>
 
 #include "Image.hpp"
 #include "Ray.hpp"
@@ -98,7 +99,7 @@ int main(int argc, char **argv)
             Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
             
             // get the color that the ray provides
-            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t, 1, NULL, MAX_REFLECTIONS);
+            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t, 1, 1, MAX_REFLECTIONS);
 
             // set the image pixel to be that color
             img->pixel(x, y, clr);
@@ -107,6 +108,7 @@ int main(int argc, char **argv)
 
       // draw picture to sample.tga
       string outfile = fileName;
+      outfile = outfile.substr(0, outfile.length() - 4);
       if (c == 0) {
          outfile = outfile + ".tga";
       } else {

@@ -8,9 +8,9 @@ using namespace std;
 const double PI = 3.141592653589793;
 
 Scene::Scene() {
-	lights.clear();
-	triangles.clear();
-	spheres.clear();
+    lights.clear();
+    triangles.clear();
+    spheres.clear();
    planes.clear();
    boxes.clear();
    BackgroundColor = Eigen::Vector3f(0,0,0);
@@ -18,9 +18,9 @@ Scene::Scene() {
 }
 
 Scene::~Scene() {
-	lights.clear();
-	triangles.clear();
-	spheres.clear();
+    lights.clear();
+    triangles.clear();
+    spheres.clear();
    planes.clear();
    boxes.clear();
 }
@@ -98,7 +98,7 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    return numObjects;
 }
 
-Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *curShape, int bouncesLeft) {
+Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, double curIOR, int bouncesLeft) {
     Shape *hitShape = NULL;
     Shape *shadowShape = NULL;
 
@@ -107,13 +107,16 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
         // calculate the point the shape was hit at
         Eigen::Vector3f hitPt = ray.position + ray.direction*t;
 
+        // store for later
+        Eigen::Vector3f hitNormal = hitShape->GetNormal(hitPt);
+
         // set the color to ambient
         Eigen::Vector3f baseColor = hitShape->color.head<3>();
         Eigen::Vector3f retColor = baseColor*hitShape->finish.ambient;
+        
+        // set the values of the refraction and relfection
         double reflectVal = hitShape->finish.reflection;
-        double refractVal = hitShape->finish.refraction;
-
-        double s = -1; // shadow distance
+        double refractVal = hitShape->color[3];
 
         //check to see if the hit object is in shadow for each light
         for (unsigned int i = 0; i < lights.size(); ++i)
@@ -123,44 +126,45 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
             double lightDistance = l.norm();
             l.normalize();
             Ray shadowRay = Ray(hitPt + l*EPSILON, l);  // epsilon test for shadow ray
-
-            #ifdef UNIT_TEST
-            cout << "\nShadow feeler: " << "(" << shadowRay.direction(0) << ", " 
-                                        << shadowRay.direction(1) << ", " 
-                                        << shadowRay.direction(2) << ")\n";
-            #endif
             
+            // initialize colors for this light
             Eigen::Vector3f shading = Eigen::Vector3f(0,0,0);
             Eigen::Vector3f reflectColor = Eigen::Vector3f(0,0,0);
             Eigen::Vector3f refractColor = Eigen::Vector3f(0,0,0);
 
+            // determine if we are inside or outside the object, and set the IORs accordingly
+            bool isInside = (-ray.direction).dot(hitNormal) < 0;
+            double oldIOR, newIOR;
+
+            if (isInside) {
+                // if we are inside, we are leaving the current IOR and going to the previous one
+                oldIOR = curIOR;
+                newIOR = prevIOR;
+            } else {
+                // if we are entering we leaving the current IOR and entering the new one (putting it on top)
+                oldIOR = curIOR;
+                newIOR = hitShape->finish.ior;
+            }
+
             // if we can still bounce around for reflection and refraction
             if (bouncesLeft > 0) {
-                Eigen::Vector3f hitNormal = hitShape->GetNormal(hitPt);
-
                 // if we have refraction calculate it
-                if (refractVal > 0) {
+                if (hitShape->finish.refraction > 0) {
                     // do refraction
                     Ray refrRay;
                     bool totalReflection = false;
 
-                    if (curShape == NULL)
-                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, ior, 
-                                                        hitShape->finish.ior, &totalReflection);
-                    else if(curShape != hitShape)
-                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, curShape->finish.ior, 
-                                                        hitShape->finish.ior, &totalReflection);
-                    else
-                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, hitShape->finish.ior, 
-                                                        ior, &totalReflection);
-
-                    double temp = 0;
+                    if (isInside) {
+                        refrRay = ComputeRefractedRay(hitPt, -hitNormal, ray.direction, oldIOR, 
+                                                        newIOR, &totalReflection);
+                    } else {
+                        refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, oldIOR, 
+                                                        newIOR, &totalReflection);
+                    }
 
                     if (!totalReflection) {
-                        if (hitShape == curShape)
-                            refractColor = ShootRayIntoScene(refrRay, temp, ior, NULL, bouncesLeft - 1);
-                        else   
-                            refractColor = ShootRayIntoScene(refrRay, temp, ior, hitShape, bouncesLeft - 1);
+                        double temp = 0;
+                        refractColor = ShootRayIntoScene(refrRay, temp, oldIOR, newIOR, bouncesLeft - 1);
                     } else {
                         reflectVal += refractVal;
                         refractVal = 0;
@@ -172,16 +176,12 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
                     // do reflection
                     Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
                     double temp = 0;
-
-                    if (hitShape == curShape)
-                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, NULL, bouncesLeft - 1);
-                    else   
-                        reflectColor = ShootRayIntoScene(reflRay, temp, ior, hitShape, bouncesLeft - 1);
+                    reflectColor = ShootRayIntoScene(reflRay, temp, oldIOR, newIOR, bouncesLeft - 1);
                 }
             }
 
             // if the spot is not in shadow because there is no object between it and the light
-            s = -1;
+            double s = -1;
             bool inShadow = (CheckHit(shadowRay, shadowShape, s) || s > lightDistance);
 
             if(!inShadow) {
@@ -193,12 +193,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
                 if (shader == 0) {
                     shading = brdf.BlinnPhong(hitShape, hitPt, l, ray.direction, lightCol);
                 } else if (shader == 1) {
-                    if (curShape == NULL)
-                        shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, ior, hitShape->finish.ior);
-                    else if(curShape != hitShape)
-                        shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, curShape->finish.ior, hitShape->finish.ior);
-                    else
-                        shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, hitShape->finish.ior, ior);
+                    shading = brdf.CookTorrance(hitShape, hitPt, l, ray.direction, lightCol, oldIOR, newIOR);
                 } else if (shader == 2) {
                     shading = brdf.ToonSorta(hitShape, hitPt, l, ray.direction, lightCol, &retColor);
                 } else {
@@ -207,7 +202,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double ior, Shape *
                 }
             }
 
-            retColor += (1 - (reflectVal + refractVal))*shading
+            retColor += (1 - reflectVal - refractVal)*shading
                         + reflectVal*reflectColor
                         + refractVal*refractColor;
         }
