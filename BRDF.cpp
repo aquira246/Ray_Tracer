@@ -5,12 +5,11 @@ using namespace std;
 
 const double PI = 3.141592653589793;
 
-Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen::Vector3f &l, 
+Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, Eigen::Vector3f &n, Eigen::Vector3f &l, 
                                     Eigen::Vector3f &d, Eigen::Vector3f &lightCol) {
     // prepare what is need for blinn-phong
     Eigen::Vector3f h = l + -d;
     h.normalize();
-    Eigen::Vector3f n = hitShape->GetNormal(hitPt);
 
 
     // make diffuse
@@ -24,26 +23,14 @@ Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen:
 
     #ifdef UNIT_TEST
     Eigen::Vector3f specular_color = hitShape->color.head<3>()*spec;
-    specular_color *= 255;
-    specular_color(0) = ceil(lightCol[0]*specular_color(0));
-    specular_color(1) = ceil(lightCol[0]*specular_color(1));
-    specular_color(2) = ceil(lightCol[0]*specular_color(2));
 
     Eigen::Vector3f diffuse_color = hitShape->color.head<3>()*dif;
-    diffuse_color *= 255;
-    diffuse_color(0) = ceil(lightCol[0]*diffuse_color(0));
-    diffuse_color(1) = ceil(lightCol[1]*diffuse_color(1));
-    diffuse_color(2) = ceil(lightCol[2]*diffuse_color(2));
     
     Eigen::Vector3f ambient_color = hitShape->color.head<3>()*hitShape->finish.ambient;
-    ambient_color *= 255;
-    ambient_color(0) = ceil(ambient_color(0));
-    ambient_color(1) = ceil(ambient_color(1));
-    ambient_color(2) = ceil(ambient_color(2));
 
-    cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
-    cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
     cout << "Ambient: " << "(" << ambient_color(0) << ", " << ambient_color(1) << ", " << ambient_color(2) << ")\n";
+    cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
+    cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
     #endif
 
     Eigen::Vector3f ret = hitShape->color.head<3>()*(dif + spec);
@@ -57,12 +44,11 @@ Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen:
 
 
 // http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
-Eigen::Vector3f BRDF::CookTorrance(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen::Vector3f &l, 
+Eigen::Vector3f BRDF::CookTorrance(Shape *hitShape, Eigen::Vector3f &n, Eigen::Vector3f &l, 
                                         Eigen::Vector3f &d, Eigen::Vector3f &lightCol, 
                                         double curIOR, double newIOR) {
     Eigen::Vector3f v = -d;
     Eigen::Vector3f h = (l + v).normalized();
-    Eigen::Vector3f n = (hitShape->GetNormal(hitPt)).normalized();
     float m = hitShape->finish.roughness;
     v.normalize();
 
@@ -110,10 +96,9 @@ Eigen::Vector3f BRDF::CookTorrance(Shape *hitShape, Eigen::Vector3f &hitPt, Eige
     return ret;
 }
 
-Eigen::Vector3f BRDF::ToonSorta(Shape *hitShape, Eigen::Vector3f &hitPt, Eigen::Vector3f &l, 
+Eigen::Vector3f BRDF::ToonSorta(Shape *hitShape, Eigen::Vector3f &n, Eigen::Vector3f &l, 
                                 Eigen::Vector3f &d, Eigen::Vector3f &lightCol, Eigen::Vector3f *retColor) {
     Eigen::Vector3f baseColor = hitShape->color.head<3>();
-    Eigen::Vector3f n = hitShape->GetNormal(hitPt);
 
     if (-.1 < d.dot(n)) {
         // we are at an edge and should color it black for outlining
