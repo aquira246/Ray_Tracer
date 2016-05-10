@@ -31,24 +31,25 @@ class Shape
       Eigen::Vector3f center;
       float radius;
 
+      Eigen::Matrix4f m0, inverseM0, inverseTransposeM0;
+      bool transformed;
+
       #ifndef CULLING
       bool isFlat; // flat objects need to have 2 faces checked
       #endif
 
       static void ParseModifiers(Shape &shape);
       
-      virtual bool CalculateHit(Ray ray, double &t) {
+      virtual bool CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
          return 0;
-      }
-
-      virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt) {
-         cout << "BAD! Should call Shape's Get Normal" << endl;
-         return Eigen::Vector3f(0,0,0);
       }
 
       virtual int GetShape() {
          return SHAPE_ID;
       }
+
+      void transformRay(Ray &ray, Eigen::Vector3f *position, Eigen::Vector3f *direction);
+      void transformNormal(Eigen::Vector3f &hitNormal, Eigen::Vector3f *transformedNormal);
 
    private:
 };
@@ -56,6 +57,6 @@ class Shape
 // return vector: inxex 1: how many answers there are
 // index 2: the positive output
 // index 3: the negative output
-Eigen::Vector3f QuadraticFormula(double A, double B, double C);
+int QuadraticFormula(double A, double B, double C, double &plusOp, double &minOp);
 
 #endif

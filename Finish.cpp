@@ -24,7 +24,7 @@ void Finish::Parse(Finish &finish) {
       switch(Token.id) {
       case T_AMBIENT:
          finish.ambient = ParseDouble();
-         assert(finish.ambient > 0 && finish.ambient < 1);
+         assert(finish.ambient >= 0 && finish.ambient < 1);
          break;
       case T_DIFFUSE:
          finish.diffuse = ParseDouble();

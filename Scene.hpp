@@ -35,7 +35,7 @@ class Scene
         void setShader(int s);
 
 		Eigen::Vector3f ShootRayIntoScene(Ray ray, double &t, double prevIOR, double curIOR, int bouncesLeft);
-        bool CheckHit(Ray checkRay, Shape *&hitShape, double &t);   // in public for testing reasons
+        bool CheckHit(Ray &checkRay, Shape *&hitShape, double &t, Eigen::Vector3f &hitNormal);   // in public for testing reasons
 
     	static int Parse(FILE* infile, Scene &scene);
 

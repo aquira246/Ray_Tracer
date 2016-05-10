@@ -66,13 +66,21 @@ void Triangle::Parse(Triangle &triangle) {
 // help from 
 // http://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection
 // same method as what we did in class but cleaner!
-bool Triangle::CalculateHit(Ray ray, double &t) {
+bool Triangle::CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
    double u, v;
    Eigen::Vector3f ab = b - a;
    Eigen::Vector3f ac = c - a;
 
+   Eigen::Vector3f dir, pos;
+   if (transformed) {
+      transformRay(ray, &pos, &dir);
+   } else {
+      dir = ray.direction;
+      pos = ray.position;
+   }
+
    // get the vector perpendicular to D and pt a to pt c
-   Eigen::Vector3f pvec = ray.direction.cross(ac);
+   Eigen::Vector3f pvec = dir.cross(ac);
 
    // get the angle between the pvec and pt a to pt b
    // this is the angle between the ray and triangle
@@ -85,7 +93,7 @@ bool Triangle::CalculateHit(Ray ray, double &t) {
 
    float inverseDet = 1.0/det;
 
-   Eigen::Vector3f tvec = ray.position - a;
+   Eigen::Vector3f tvec = pos - a;
 
    u = tvec.dot(pvec)*inverseDet;
 
@@ -94,7 +102,7 @@ bool Triangle::CalculateHit(Ray ray, double &t) {
       return false;
 
    Eigen::Vector3f qvec = tvec.cross(ab);
-   v = ray.direction.dot(qvec)*inverseDet;
+   v = dir.dot(qvec)*inverseDet;
 
    // 0 < v < 1 also u + v == 1 
    if (v < 0 || u + v > 1)
@@ -102,9 +110,11 @@ bool Triangle::CalculateHit(Ray ray, double &t) {
 
    t = ac.dot(qvec)*inverseDet;
 
-   return true;
-}
+   if (transformed) {
+      transformNormal(normal, hitNormal);
+   } else {
+      *hitNormal = normal;
+   }
 
-Eigen::Vector3f Triangle::GetNormal(Eigen::Vector3f hitPt) {
-   return normal;
+   return true;
 }

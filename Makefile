@@ -18,6 +18,10 @@ else
 	name += raytrace
 endif
 
+ifdef PROFILE
+	CFLAGS += -pg
+endif
+
 all: $(OBJECT)
 	touch main.cpp
 	$(CC) -g $(CFLAGS) $(INC) $(OBJECT) $(LIB) -o $(name)
@@ -42,13 +46,4 @@ good:
 good2:
 	./raytrace 640 480 resources/simp_cam2.pov
 clean:
-	rm -f *~ *.o a.out raytrace raytrace_test
-clear: $(OBJECT)
-	clear
-	rm -f *~ *.o a.out raytrace raytrace_test
-	$(CC) $(CFLAGS) $(INC) *.cpp $(LIB) -o raytrace
-fast: $(OBJECT)
-	rm -f *~ *.o a.out raytrace raytrace_test
-	clear
-	$(CC) $(CFLAGS) $(INC) *.cpp $(LIB) -o raytrace
-	./raytrace resources/bunny_small.pov
+	rm -f *~ *.o a.out raytrace raytrace_test gmon.out resources/gprof*

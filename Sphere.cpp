@@ -46,39 +46,52 @@ void Sphere::Parse(Sphere &sphere) {
    ParseRightCurly();
 }
 
-// TODO
-bool Sphere::CalculateHit(Ray ray, double &t) {
-   Eigen::Vector3f dir = ray.direction;
-   Eigen::Vector3f dist = ray.position - center;
+bool Sphere::CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
+   Eigen::Vector3f dir, dist;
+
+   if (transformed) {
+      transformRay(ray, &dist, &dir);
+      dist = dist - center;
+   } else {
+      dir = ray.direction;
+      dist = ray.position - center;
+   }
 
    double A = dir.dot(dir);
    double B = (2*dir).dot(dist);
 
    // double C = center.dot(center) + ray.position.dot(ray.position) + -2*ray.position.dot(center) - radius*radius;
    double C = dist.dot(dist) - radius*radius;
+   double plusOp, minOp;
 
-   Eigen::Vector3f quad = QuadraticFormula(A, B, C);
+   int valids = QuadraticFormula(A, B, C, plusOp, minOp);
 
-   if (quad(0) == 0) {
+   if (valids == 0) {
       //SHOULD BE AN ERROR
       return false;
    }
 
-   if (quad(0) == 1) {
-      t = (double)quad(1);
+   if (valids == 1) {
+      t = (double)plusOp;
    } else {
-      if (quad(1) >= 0 && quad(2) >= 0) {
-         t = (double)(min(quad(1), quad(2)));
+      if (plusOp >= 0 && minOp >= 0) {
+         t = (double)(min(plusOp, minOp));
       } else {
-         t = (double)(max(quad(1), quad(2)));
+         t = (double)(max(plusOp, minOp));
       }
    }
 
-   return true;
-}
+   Eigen::Vector3f hitPt = ray.position + ray.direction*t;
+   Eigen::Vector3f norm = (hitPt - center)/radius;
 
-Eigen::Vector3f Sphere::GetNormal(Eigen::Vector3f hitPt) {
-   Eigen::Vector3f ret = hitPt - center;
-   ret = ret/radius;
-   return ret;
+   if (transformed) {
+      transformNormal(norm, hitNormal);
+      Eigen::Vector3f n = *hitNormal;
+      cout << "Normal: " << norm(0) << ", " << norm(1) << ", " << norm(2) 
+            << "    xform: " << n[0] << ", " << n[1] << ", " << n[2] << "\n";
+   } else {
+      *hitNormal = norm;
+   }
+   
+   return true;
 }

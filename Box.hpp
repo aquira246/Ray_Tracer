@@ -27,9 +27,7 @@ class Box: public Shape
             return BOX_ID;
         }
 
-        bool CalculateHit(Ray ray, double &t);
-        virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
-
+        bool CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal);
     private:
 };
 

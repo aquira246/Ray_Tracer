@@ -28,9 +28,9 @@ Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, Eigen::Vector3f &n, Eigen::Vec
     
     Eigen::Vector3f ambient_color = hitShape->color.head<3>()*hitShape->finish.ambient;
 
-    cout << "Ambient: " << "(" << ambient_color(0) << ", " << ambient_color(1) << ", " << ambient_color(2) << ")\n";
-    cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
-    cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
+    // cout << "Ambient: " << "(" << ambient_color(0) << ", " << ambient_color(1) << ", " << ambient_color(2) << ")\n";
+    // cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
+    // cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
     #endif
 
     Eigen::Vector3f ret = hitShape->color.head<3>()*(dif + spec);
@@ -125,13 +125,6 @@ Eigen::Vector3f BRDF::ToonSorta(Shape *hitShape, Eigen::Vector3f &n, Eigen::Vect
     ret[0] *= lightCol[0];
     ret[1] *= lightCol[1];
     ret[2] *= lightCol[2];
-
-    ret = ret*7;
-    ret[0] = ceil(ret[0]);
-    ret[1] = ceil(ret[1]);
-    ret[2] = ceil(ret[2]);
-
-    ret = ret/7;
 
     return ret;
 }

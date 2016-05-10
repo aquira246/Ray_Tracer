@@ -64,6 +64,13 @@ int Scene::Parse(FILE* infile, Scene &scene) {
             Sphere::Parse(*sphere);
             scene.shapes.push_back(sphere);
             scene.spheres.push_back(*sphere);
+            // cout << "Sphere\n";
+            // cout << sphere->m0 << endl;
+            // cout << "inverse: " << endl;
+            // cout << sphere->inverseM0 << endl;
+            // cout << "transpose: " << endl;
+            // cout << sphere->inverseTransposeM0 << endl;
+            // cout << "is transformed " << sphere->transformed << endl << endl;
             break;
          case T_PLANE:
             plane = new Plane();
@@ -101,9 +108,10 @@ int Scene::Parse(FILE* infile, Scene &scene) {
 Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, double curIOR, int bouncesLeft) {
     Shape *hitShape = NULL;
     Shape *shadowShape = NULL;
+    Eigen::Vector3f hitNormal;
 
     // see if ray hits anything
-    if (CheckHit(ray, hitShape, t)) {
+    if (CheckHit(ray, hitShape, t, hitNormal)) {
 
         #ifdef UNIT_TEST
         cout << "T = " << t << endl;
@@ -111,9 +119,6 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
 
         // calculate the point the shape was hit at
         Eigen::Vector3f hitPt = ray.position + ray.direction*t;
-
-        // store for later
-        Eigen::Vector3f hitNormal = hitShape->GetNormal(hitPt);
 
         // determine if we are inside or outside the object, and set the IORs accordingly
         bool isInside = (-ray.direction).dot(hitNormal) < 0;
@@ -145,7 +150,8 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
             
             // if the spot is not in shadow because there is no object between it and the light
             double s = -1;
-            bool inShadow = (CheckHit(shadowRay, shadowShape, s) || s > lightDistance);
+            Eigen::Vector3f tempNormal;
+            bool inShadow = (CheckHit(shadowRay, shadowShape, s, tempNormal) || s > lightDistance);
 
             if(!inShadow) {
                 
@@ -225,10 +231,23 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
         }
 
         retColor = retColor*(1 - reflectVal - refractVal) + reflectColor + refractColor;
-    
+
         retColor[0] = fmin(retColor[0], 1.0f);
         retColor[1] = fmin(retColor[1], 1.0f);
         retColor[2] = fmin(retColor[2], 1.0f);
+
+        if (shader == 2) {
+            retColor = retColor*7;
+            retColor[0] = round(retColor[0]);
+            retColor[1] = round(retColor[1]);
+            retColor[2] = round(retColor[2]);
+
+            retColor = retColor/7;
+
+            retColor[0] = fmin(retColor[0], 1.0f);
+            retColor[1] = fmin(retColor[1], 1.0f);
+            retColor[2] = fmin(retColor[2], 1.0f);
+        }
 
         // compute lighting
         return retColor;
@@ -242,19 +261,21 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
     }
 }
 
-bool Scene::CheckHit(Ray checkRay, Shape *&hitShape, double &t) {
+bool Scene::CheckHit(Ray &checkRay, Shape *&hitShape, double &t, Eigen::Vector3f &hitNormal) {
     bool hit = false;
     double checkingT = 0;
     t = -1;
+    Eigen::Vector3f tempNormal;
 
     // check if we hit a shape
     for (unsigned int i = 0; i < shapes.size(); ++i)
     {
-        if ((*shapes[i]).CalculateHit(checkRay, checkingT)) {
+        if ((*shapes[i]).CalculateHit(checkRay, checkingT, &tempNormal)) {
             if (checkingT > 0 && (checkingT < t || !hit)) {
                 hitShape = shapes[i];
                 t = checkingT;
                 hit = true;
+                hitNormal = tempNormal;
             }
         }
     }

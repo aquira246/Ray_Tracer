@@ -23,8 +23,7 @@ class Plane: public Shape
       Eigen::Vector3f normal;
       // Shape has a center and radius
 
-      bool CalculateHit(Ray ray, double &t);
-      virtual Eigen::Vector3f GetNormal(Eigen::Vector3f hitPt);
+      bool CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal);
 
       virtual int GetShape() {
          return PLANE_ID;

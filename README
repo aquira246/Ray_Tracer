@@ -1,10 +1,10 @@
 Ray Tracer program by Andrew Acosta
 
-PART 2
+PART 3
 
 How to make:
-to make the program, just type "make". This should result in a lot of object files and the rt executable
-to make the Unit test mode, type "make UNIT=1". This should result in object files and the rt_test executable
+to make the program, just type "make". This should result in a lot of object files and the raytrace executable
+to make the Unit test mode, type "make UNIT=1". This should result in object files and the raytrace_test executable
 
 BRDFs to choose from:
 0 = Blinn-Phong
@@ -27,10 +27,15 @@ How to run:
 Use "make clean" to remove all of the executables and object files
 
 Current Status:
-Shading: 2 working BRDFS
-Shadows: Working
-Camera: Working
+    Fixed naming the resulting images and exe files (apparently wasn't doing that right since part 1)
+    Triangle Intersections working
+    Reflections working
+    Refractions working - but the pov ray version
 
 Parsing: what is missing
         Cones
         Transforms
+        
+Non-working shapes:
+        Cones
+        Boxes
