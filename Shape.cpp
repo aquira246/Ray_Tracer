@@ -1,5 +1,7 @@
 #include "Shape.hpp"
 
+#define PI 3.14159265
+
 using namespace std;
 using namespace Eigen;
 
@@ -109,19 +111,22 @@ int QuadraticFormula(double A, double B, double C, double &plusOp, double &minOp
 }
 
 Eigen::Matrix4f generateRot(float xrot, float yrot, float zrot) {
-    Eigen::Matrix4f ret;
+   Eigen::Matrix4f ret;
 
-   if (xrot > 0.01) {
+   if (xrot >= 0.01) {
+      xrot = xrot*PI/180;
       ret << 1, 0,         0,         0,
              0, cos(xrot),-sin(xrot), 0,
              0, sin(xrot), cos(xrot), 0,
              0, 0,         0,         1;
-   } else if (yrot > 0.01) {
+   } else if (yrot >= 0.01) {
+      yrot = yrot*PI/180;
       ret << cos(yrot), 0, sin(yrot), 0,
              0,         1, 0,         0,
-             -sin(xrot),0, cos(xrot), 0,
+             -sin(yrot),0, cos(yrot), 0,
              0,         0, 0,         1;
    } else {
+      zrot = zrot*PI/180;
       ret << cos(zrot),-sin(zrot), 0, 0,
              sin(zrot), cos(zrot), 0, 0,
              0,         0,         1, 0,

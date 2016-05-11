@@ -10,3 +10,5 @@ old/*
 parser_stuff/*
 pre-parser/*
 bugs/*
+gmon.out
+gprof*

@@ -86,9 +86,9 @@ bool Sphere::CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
 
    if (transformed) {
       transformNormal(norm, hitNormal);
-      Eigen::Vector3f n = *hitNormal;
-      cout << "Normal: " << norm(0) << ", " << norm(1) << ", " << norm(2) 
-            << "    xform: " << n[0] << ", " << n[1] << ", " << n[2] << "\n";
+      // Eigen::Vector3f n = *hitNormal;
+      // cout << "Normal: " << norm(0) << ", " << norm(1) << ", " << norm(2) 
+      //       << "    xform: " << n[0] << ", " << n[1] << ", " << n[2] << "\n";
    } else {
       *hitNormal = norm;
    }
