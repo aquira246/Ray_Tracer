@@ -83,7 +83,10 @@ int main(int argc, char **argv)
 
    scene.setShader(shader);
 
+   std::vector<Ray> laserbeams;
+   laserbeams.resize(9);
    double t;
+   Eigen::Vector3f clr;
 
    for (unsigned int c = 0; c < scene.cameras.size(); ++c)
    {
@@ -96,10 +99,18 @@ int main(int argc, char **argv)
          for (int x = 0; x < width; ++x)
          {
             // calculate camera ray
-            Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
+            // Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
+            ComputeCameraRay_AntiAliasing(x, y, width, height, scene.cameras[c], laserbeams);
             
-            // get the color that the ray provides
-            Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t, 1, 1, MAX_REFLECTIONS);
+            clr << 0, 0, 0;
+
+            for (unsigned int i = 0; i < laserbeams.size(); ++i)
+            {
+               // get the color that the ray provides
+               clr += scene.ShootRayIntoScene(laserbeams[i], t, 1, 1, MAX_REFLECTIONS);
+            }
+
+            clr /= (float)laserbeams.size();
 
             if (shader == 2) {
                clr = clr*7;

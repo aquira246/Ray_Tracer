@@ -8,32 +8,60 @@
 
 using namespace std;
 
+float RandomFloat(float a, float b) {
+   /* initialize random seed: */
+   srand (time(NULL));
+   
+   float random = ((float) rand()) / (float) RAND_MAX;
+   float diff = b - a;
+   float r = random * diff;
+   return a + r;
+}
+
 Ray::Ray() {
-    position = Eigen::Vector3f(0,0,0);
-    direction = Eigen::Vector3f(0,0,1);
+   position = Eigen::Vector3f(0,0,0);
+   direction = Eigen::Vector3f(0,0,1);
 }
 
 Ray::Ray(Eigen::Vector3f p, Eigen::Vector3f d) {
-    position = p;
-    direction = d;
+   position = p;
+   direction = d;
 }
 
 Ray::~Ray() {
 
 }
 
-Ray ComputeCameraRay(int i, int j, int width, int height, Camera cam) {
-  double us = cam.l + (cam.r - cam.l)*((double)i+.5)/(double)width;
-  double vs = cam.b + (cam.t - cam.b)*((double)j+.5)/(double)height;
+Ray ComputeCameraRay(int i, int j, int width, int height, Camera &cam) {
+   double us = cam.l + (cam.r - cam.l)*((double)i+.5)/(double)width;
+   double vs = cam.b + (cam.t - cam.b)*((double)j+.5)/(double)height;
 
-  Eigen::Vector3f ray_direction = cam.upAxis*vs + cam.rightAxis*us + cam.direction;
-  ray_direction.normalize();
+   Eigen::Vector3f ray_direction = cam.upAxis*vs + cam.rightAxis*us + cam.direction;
+   ray_direction.normalize();
 
-  return Ray(cam.position, ray_direction);
+   return Ray(cam.position, ray_direction);
+}
+
+void ComputeCameraRay_AntiAliasing(int i, int j, int width, int height, Camera &cam, std::vector<Ray> &rays) {
+   int ctr = 0;
+   for (int imod = 0; imod < 3; imod++)
+   {
+      for (int jmod = 0; jmod < 3; jmod++)
+      {
+         float randI = RandomFloat(0, .33) + imod*.33;
+         float randJ = RandomFloat(0, .33) + jmod*.33;
+         double us = cam.l + (cam.r - cam.l)*((double)i+randI)/(double)width;
+         double vs = cam.b + (cam.t - cam.b)*((double)j+randJ)/(double)height;
+
+         Eigen::Vector3f ray_direction = cam.upAxis*vs + cam.rightAxis*us + cam.direction;
+         ray_direction.normalize();
+         rays[ctr++] = Ray(cam.position, ray_direction);
+      }
+   }
 }
 
 // help from https://www.cs.unc.edu/~rademach/xroads-RT/RTarticle.html
-Ray ComputeReflectionRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, Eigen::Vector3f rayDirection) {
+Ray ComputeReflectionRay(Eigen::Vector3f &hitPt, Eigen::Vector3f &surfaceNormal, Eigen::Vector3f &rayDirection) {
    // angle between normal an reflected ray
    double c1 = -surfaceNormal.dot(rayDirection);
 
@@ -45,7 +73,7 @@ Ray ComputeReflectionRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, E
 }
 
 // help from https://www.cs.unc.edu/~rademach/xroads-RT/RTarticle.html
-Ray ComputeRefractedRay(Eigen::Vector3f hitPt, Eigen::Vector3f surfaceNormal, Eigen::Vector3f rayDirection, 
+Ray ComputeRefractedRay(Eigen::Vector3f &hitPt, Eigen::Vector3f &surfaceNormal, Eigen::Vector3f &rayDirection, 
                         double ior1, double ior2, bool *totalReflection) {
 
    double iorDiv = ior1/ior2;
