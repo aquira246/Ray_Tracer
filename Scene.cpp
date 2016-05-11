@@ -201,21 +201,42 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
                 cout << refrRay.direction[0] << ", " << refrRay.direction[1] << ", " << refrRay.direction[2] << "}\n";
                 #endif
 
-                if (!totalReflection) {
-                    double temp = -1;
-                    refractColor = refractVal*ShootRayIntoScene(refrRay, temp, oldIOR, newIOR, bouncesLeft - 1);
-                } else {
-                    reflectVal += refractVal;
-                    refractVal = 0;
+                float R0 = pow(((oldIOR - newIOR)/(oldIOR + newIOR)), 2);
+                float R = R0 + (1.0 - R0)*pow(1.0 - hitNormal.dot(-ray.direction), 5.0);   //schlick's approximation
 
+                double temp = -1;
+                double refractT = -1;
+                if (!totalReflection) {
+                    refractColor = ShootRayIntoScene(refrRay, refractT, oldIOR, newIOR, bouncesLeft - 1);
+                } else {
+                    R = 0;
                     #ifdef UNIT_TEST
                     cout << "Total Internal Reflection" << endl;
                     #endif
                 }
-            }
 
+                Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
+                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1);
+
+                /* beers law */
+                Eigen::Vector3f atten = .15f*baseColor* -fabs(refractT);
+                Eigen::Vector3f intensity;
+                intensity[0] = expf(atten[0]);
+                intensity[1] = expf(atten[1]);
+                intensity[2] = expf(atten[2]);
+
+                refractColor[0] = refractColor[0]*intensity[0];
+                refractColor[1] = refractColor[1]*intensity[1];
+                refractColor[2] = refractColor[2]*intensity[2];
+
+                retColor = R*refractColor + (1 - R)*reflectColor;
+
+                /* previously */
+//                retColor = (1 - refractVal - reflectVal)*retColor + refractVal*refractColor + reflectColor*reflectColor;
+
+            }  
             // if we have reflection calculate it
-            if (reflectVal > 0) {
+            else if (reflectVal > 0) {
                 // do reflection
                 Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
                 double temp = -1;
@@ -226,28 +247,15 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
                 cout << reflRay.direction[0] << ", " << reflRay.direction[1] << ", " << reflRay.direction[2] << "}\n";
                 #endif
 
-                reflectColor = reflectVal*ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1);
+                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1);
+                retColor = retColor*(1 - reflectVal) + reflectVal*reflectColor;
+
             }
         }
-
-        retColor = retColor*(1 - reflectVal - refractVal) + reflectColor + refractColor;
 
         retColor[0] = fmin(retColor[0], 1.0f);
         retColor[1] = fmin(retColor[1], 1.0f);
         retColor[2] = fmin(retColor[2], 1.0f);
-
-        if (shader == 2) {
-            retColor = retColor*7;
-            retColor[0] = round(retColor[0]);
-            retColor[1] = round(retColor[1]);
-            retColor[2] = round(retColor[2]);
-
-            retColor = retColor/7;
-
-            retColor[0] = fmin(retColor[0], 1.0f);
-            retColor[1] = fmin(retColor[1], 1.0f);
-            retColor[2] = fmin(retColor[2], 1.0f);
-        }
 
         // compute lighting
         return retColor;

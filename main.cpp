@@ -101,6 +101,19 @@ int main(int argc, char **argv)
             // get the color that the ray provides
             Eigen::Vector3f clr = scene.ShootRayIntoScene(laserbeam, t, 1, 1, MAX_REFLECTIONS);
 
+            if (shader == 2) {
+               clr = clr*7;
+               clr[0] = round(clr[0]);
+               clr[1] = round(clr[1]);
+               clr[2] = round(clr[2]);
+
+               clr = clr/7;
+
+               clr[0] = fmin(clr[0], 1.0f);
+               clr[1] = fmin(clr[1], 1.0f);
+               clr[2] = fmin(clr[2], 1.0f);
+           }
+
             // set the image pixel to be that color
             img->pixel(x, y, clr);
          }

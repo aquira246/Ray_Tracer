@@ -85,6 +85,7 @@ bool Sphere::CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
    Eigen::Vector3f norm = (hitPt - center)/radius;
 
    if (transformed) {
+      // sets the hitnormal in the transformNormal function
       transformNormal(norm, hitNormal);
       // Eigen::Vector3f n = *hitNormal;
       // cout << "Normal: " << norm(0) << ", " << norm(1) << ", " << norm(2) 
