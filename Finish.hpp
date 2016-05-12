@@ -21,7 +21,7 @@ class Finish {
       double ior;
 
       static void Parse(Finish &finish);
-      static void PrintFinish(Finish &finish);
+      static void PrintFinish(const Finish &finish);
 
    private:
 };

@@ -32,7 +32,7 @@ Ray::~Ray() {
 
 }
 
-Ray ComputeCameraRay(int i, int j, int width, int height, Camera &cam) {
+Ray ComputeCameraRay(int i, int j, int width, int height, const Camera &cam) {
    double us = cam.l + (cam.r - cam.l)*((double)i+.5)/(double)width;
    double vs = cam.b + (cam.t - cam.b)*((double)j+.5)/(double)height;
 
@@ -42,7 +42,7 @@ Ray ComputeCameraRay(int i, int j, int width, int height, Camera &cam) {
    return Ray(cam.position, ray_direction);
 }
 
-void ComputeCameraRay_AntiAliasing(int i, int j, int width, int height, Camera &cam, std::vector<Ray> &rays) {
+void ComputeCameraRay_AntiAliasing(int i, int j, int width, int height, const Camera &cam, std::vector<Ray> &rays) {
    int ctr = 0;
    for (int imod = 0; imod < 3; imod++)
    {
@@ -61,7 +61,7 @@ void ComputeCameraRay_AntiAliasing(int i, int j, int width, int height, Camera &
 }
 
 // help from https://www.cs.unc.edu/~rademach/xroads-RT/RTarticle.html
-Ray ComputeReflectionRay(Eigen::Vector3f &hitPt, Eigen::Vector3f &surfaceNormal, Eigen::Vector3f &rayDirection) {
+Ray ComputeReflectionRay(const Eigen::Vector3f &hitPt, const Eigen::Vector3f &surfaceNormal, const Eigen::Vector3f &rayDirection) {
    // angle between normal an reflected ray
    double c1 = -surfaceNormal.dot(rayDirection);
 
@@ -73,7 +73,7 @@ Ray ComputeReflectionRay(Eigen::Vector3f &hitPt, Eigen::Vector3f &surfaceNormal,
 }
 
 // help from https://www.cs.unc.edu/~rademach/xroads-RT/RTarticle.html
-Ray ComputeRefractedRay(Eigen::Vector3f &hitPt, Eigen::Vector3f &surfaceNormal, Eigen::Vector3f &rayDirection, 
+Ray ComputeRefractedRay(const Eigen::Vector3f &hitPt, const Eigen::Vector3f &surfaceNormal, const Eigen::Vector3f &rayDirection, 
                         double ior1, double ior2, bool *totalReflection) {
 
    double iorDiv = ior1/ior2;

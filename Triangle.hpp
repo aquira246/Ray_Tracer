@@ -20,7 +20,7 @@ class Triangle: public Shape
       ~Triangle();
       
       static void Parse(Triangle &triangle);
-      bool CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal);
+      bool CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal);
       virtual int GetShape() {
          return TRIANGLE_ID;
       }

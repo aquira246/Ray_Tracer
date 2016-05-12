@@ -105,7 +105,7 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    return numObjects;
 }
 
-Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, double curIOR, int bouncesLeft) {
+Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft) {
     Shape *hitShape = NULL;
     Shape *shadowShape = NULL;
     Eigen::Vector3f hitNormal;
@@ -156,7 +156,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
             if(!inShadow) {
                 
                 BRDF brdf = BRDF();
-                Eigen::Vector3f lightCol = Eigen::Vector3f(lights[i].color[0], lights[i].color[1], lights[i].color[2]);
+                Eigen::Vector3f lightCol = lights[i].color.head<3>();
 
                 // pick our shader
                 if (shader == 0) {
@@ -269,7 +269,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(Ray ray, double &t, double prevIOR, dou
     }
 }
 
-bool Scene::CheckHit(Ray &checkRay, Shape *&hitShape, double &t, Eigen::Vector3f &hitNormal) {
+bool Scene::CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Vector3f &hitNormal) {
     bool hit = false;
     double checkingT = 0;
     t = -1;

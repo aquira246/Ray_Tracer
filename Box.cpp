@@ -46,7 +46,7 @@ void float_swap(float &a, float &b) {
 
 // TODO test. This is untested. Also switch to unaxis aligned
 // http://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
-bool Box::CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
+bool Box::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
    float tmin = (corner1(0) - ray.position(0)) / ray.direction(0);
    float tmax = (corner2(0) - ray.position(0)) / ray.direction(0);
 

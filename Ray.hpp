@@ -18,10 +18,10 @@ class Ray
     private:
 };
 
-Ray ComputeCameraRay(int i, int j, int width, int height, Camera &cam);
-void ComputeCameraRay_AntiAliasing(int i, int j, int width, int height, Camera &cam, std::vector<Ray> &rays);
-Ray ComputeReflectionRay(Eigen::Vector3f &hitPt, Eigen::Vector3f &surfaceNormal, Eigen::Vector3f &rayDirection);
-Ray ComputeRefractedRay(Eigen::Vector3f &hitPt, Eigen::Vector3f &surfaceNormal, Eigen::Vector3f &rayDirection, 
+Ray ComputeCameraRay(int i, int j, int width, int height, const Camera &cam);
+void ComputeCameraRay_AntiAliasing(int i, int j, int width, int height, const Camera &cam, std::vector<Ray> &rays);
+Ray ComputeReflectionRay(const Eigen::Vector3f &hitPt, const Eigen::Vector3f &surfaceNormal, const Eigen::Vector3f &rayDirection);
+Ray ComputeRefractedRay(const Eigen::Vector3f &hitPt, const Eigen::Vector3f &surfaceNormal, const Eigen::Vector3f &rayDirection, 
                         double ior1, double ior2, bool *totalReflection);
 
 #endif

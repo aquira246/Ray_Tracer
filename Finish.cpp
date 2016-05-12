@@ -58,7 +58,7 @@ void Finish::Parse(Finish &finish) {
    }
 }
 
-void Finish::PrintFinish(Finish &finish) {
+void Finish::PrintFinish(const Finish &finish) {
    printf("\tfinish { ambient %.3g diffuse %.3g specular %.3g roughness %.3g reflection %.3g refraction %.3g ior %.3g }\n",
          finish.ambient, finish.diffuse, 
          finish.specular, finish.roughness, 

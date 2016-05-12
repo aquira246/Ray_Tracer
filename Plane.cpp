@@ -40,7 +40,7 @@ void Plane::Parse(Plane &plane) {
 }
 
 // t = (n dot (plane point - ray position))/(n dot ray direction)
-bool Plane::CalculateHit(Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
+bool Plane::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
    t = -1;
 
    Eigen::Vector3f dir, pos;

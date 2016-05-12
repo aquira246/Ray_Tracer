@@ -65,7 +65,7 @@ void Shape::ParseModifiers(Shape &shape) {
    }
 }
 
-void Shape::transformRay(Ray &ray, Eigen::Vector3f *position, Eigen::Vector3f *direction) {
+void Shape::transformRay(const Ray &ray, Eigen::Vector3f *position, Eigen::Vector3f *direction) {
    Eigen::Vector4f oldDir;
    oldDir << ray.direction[0], ray.direction[1], ray.direction[2], 0;
 
@@ -78,7 +78,7 @@ void Shape::transformRay(Ray &ray, Eigen::Vector3f *position, Eigen::Vector3f *d
    *position = transformedPos.head<3>();
 }
 
-void Shape::transformNormal(Eigen::Vector3f &hitNormal, Eigen::Vector3f *transformedNormal) {
+void Shape::transformNormal(const Eigen::Vector3f &hitNormal, Eigen::Vector3f *transformedNormal) {
    Eigen::Vector4f transNormal;
    transNormal << hitNormal[0], hitNormal[1], hitNormal[2], 0;
 
