@@ -5,7 +5,7 @@ using namespace std;
 
 const double PI = 3.141592653589793;
 
-Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+Eigen::Vector3f BlinnPhong(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                     const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol) {
     // prepare what is need for blinn-phong
     Eigen::Vector3f h = l + -d;
@@ -44,7 +44,7 @@ Eigen::Vector3f BRDF::BlinnPhong(Shape *hitShape, const Eigen::Vector3f &n, cons
 
 
 // http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
-Eigen::Vector3f BRDF::CookTorrance(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+Eigen::Vector3f CookTorrance(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                         const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol, 
                                         double curIOR, double newIOR) {
     Eigen::Vector3f v = -d;
@@ -96,7 +96,7 @@ Eigen::Vector3f BRDF::CookTorrance(Shape *hitShape, const Eigen::Vector3f &n, co
     return ret;
 }
 
-Eigen::Vector3f BRDF::ToonSorta(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+Eigen::Vector3f ToonSorta(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                 const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol, 
                                 Eigen::Vector3f *retColor) {
     Eigen::Vector3f baseColor = hitShape->color.head<3>();

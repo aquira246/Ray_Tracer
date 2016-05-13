@@ -47,13 +47,14 @@ void Sphere::Parse(Sphere &sphere) {
 }
 
 bool Sphere::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
-   Eigen::Vector3f dir, dist;
+   Eigen::Vector3f dir, dist, eye;
 
    if (transformed) {
-      transformRay(ray, &dist, &dir);
-      dist = dist - center;
+      transformRay(ray, &eye, &dir);
+      dist = eye - center;
    } else {
       dir = ray.direction;
+      eye = ray.position;
       dist = ray.position - center;
    }
 
@@ -81,8 +82,9 @@ bool Sphere::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal)
       }
    }
 
-   Eigen::Vector3f hitPt = ray.position + ray.direction*t;
-   Eigen::Vector3f norm = (hitPt - center)/radius;
+   Eigen::Vector3f hitPt = eye + dir*t;
+   Eigen::Vector3f norm = (hitPt - center);
+   norm.normalize();
 
    if (transformed) {
       // sets the hitnormal in the transformNormal function

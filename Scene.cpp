@@ -154,20 +154,18 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
             bool inShadow = (CheckHit(shadowRay, shadowShape, s, tempNormal) || s > lightDistance);
 
             if(!inShadow) {
-                
-                BRDF brdf = BRDF();
                 Eigen::Vector3f lightCol = lights[i].color.head<3>();
 
                 // pick our shader
                 if (shader == 0) {
-                    retColor += brdf.BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol);
+                    retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol);
                 } else if (shader == 1) {
-                    retColor += brdf.CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR);
+                    retColor += CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR);
                 } else if (shader == 2) {
-                    retColor += brdf.ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor);
+                    retColor += ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor);
                 } else {
                     cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
-                    retColor += brdf.BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction);
+                    retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction);
                 }
             } else {
                 #ifdef UNIT_TEST
