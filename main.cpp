@@ -34,11 +34,12 @@ int main(int argc, char **argv)
    char *fileName;
    scene = Scene();
  
-   if(argc < 2 || argc > 5) {
-      cout << "Usage: rt <input_scene.pov>   | default 640 by 480 with Blinn-Phong Shading" << endl;
-      cout << "Usage: rt <input_scene.pov> <shader>  | default 640 by 480" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov>   | default Blinn-Phong Shading" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov> <shader>" << endl;
+   if(argc < 2 || argc > 6) {
+      cout << "Usage: rt <input_scene.pov>   | default AA is on, 640 by 480 with Blinn-Phong Shading" << endl;
+      cout << "Usage: rt <input_scene.pov> <shader>  | default AA is on, 640 by 480, and Blinn-Phong" << endl;
+      cout << "Usage: rt <width> <height> <input_scene.pov>   | default AA is on, Blinn-Phong Shading" << endl;
+      cout << "Usage: rt <width> <height> <input_scene.pov> <AntiAliasing>   | default Blinn-Phong Shading" << endl;
+      cout << "Usage: rt <width> <height> <input_scene.pov> <AntiAliasing> <shader>" << endl;
       exit(EXIT_FAILURE);
    }
 
@@ -51,11 +52,20 @@ int main(int argc, char **argv)
       width = stoi(argv[1]);
       height = stoi(argv[2]);
       fileName = argv[3];
+   } else if (argc == 5) {
+      width = stoi(argv[1]);
+      height = stoi(argv[2]);
+      fileName = argv[3];
+      if (stoi(argv[4]) == 0)
+         useAA = false;
    } else {
       width = stoi(argv[1]);
       height = stoi(argv[2]);
       fileName = argv[3];
-      shader = stoi(argv[4]);
+      if (stoi(argv[4]) == 0)
+         useAA = false;
+
+      shader = stoi(argv[5]);
    }
 
    infile = fopen(fileName, "r");
@@ -75,7 +85,11 @@ int main(int argc, char **argv)
    }
 
    if(infile) {
-      cout << "Width: " << width << "   Height: " << height << "   Shader: " << shaderName << endl;
+      cout << "Width: " << width << "   Height: " << height << "   Shader: " << shaderName << "   AA: ";
+      if (useAA)
+         cout << "on" << endl;
+      else
+         cout << "off" << endl;
       cout << Scene::Parse(infile, scene) << " objects parsed from scene file" << endl;
    } else {
       perror("fopen");

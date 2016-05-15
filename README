@@ -1,6 +1,6 @@
 Ray Tracer program by Andrew Acosta
 
-PART 3
+PART 4
 
 How to make:
 to make the program, just type "make". This should result in a lot of object files and the raytrace executable
@@ -11,9 +11,14 @@ BRDFs to choose from:
 1 = Cook-Torrence using Cook-Torrence Geometry, (Trowbridge-Reitz) Distribution, and Schlick approximation for the Fresnel
 2 = An attempt at toon-shading. Still under construction. 
 
+Anti-Aliasing = 0 is off, anything else is on
+
 How to run:
     Use this to create an image called sample.tga of the pov ray file
-    rt <width> <height> <input_scene.pov> <BRDF>
+    rt <width> <height> <input_scene.pov> <Anti-Aliasing> <BRDF>
+
+    Use this to toggle Anti-Aliasing and use the default blinn-phong shading
+    rt <width> <height> <input_scene.pov> <Anti-Aliasing>
 
     Using this will run the ray tracer with Blinn-Phong automatically picked
     rt <width> <height> <input_scene.pov>
@@ -27,15 +32,16 @@ How to run:
 Use "make clean" to remove all of the executables and object files
 
 Current Status:
-    Fixed naming the resulting images and exe files (apparently wasn't doing that right since part 1)
-    Triangle Intersections working
-    Reflections working
-    Refractions working - but the pov ray version
+    Schlick's refractin: working (though no beers law)
+    Geometric Transforms: working
+    Anti-Aliasing: working
+    Box intersections: Working, but the normals are wrong. But since these are bounding boxes, it's not important!
+    multiple lights: working
+    General sanity: hahahahahahahahahhahahahahahahhhhahaaaahahahahhahahaAHHAHAhAHhahAAHahahAHHAsdkfhaosjhfbwkjegfuakhsbfuekhs
 
 Parsing: what is missing
         Cones
-        Transforms
         
 Non-working shapes:
         Cones
-        Boxes
+        Boxes - getting normals from collision

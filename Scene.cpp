@@ -249,7 +249,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 retColor = (1 - R)*refractColor + (R)*reflectColor;
                 retColor += (1 - refractVal - reflectVal)*specCol;
 
-                /* previously di this for refraction (without the if statement above) */
+                /* previously did this for refraction (without the if statement above) */
 //                retColor = (1 - refractVal - reflectVal)*retColor + refractVal*refractColor + reflectColor*reflectColor;
 
             }  
