@@ -5,7 +5,27 @@ using namespace std;
 
 const double PI = 3.141592653589793;
 
-Eigen::Vector3f BlinnPhong(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+Eigen::Vector3f BlinnSpec(const Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+                                    const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol) {
+    // prepare what is need for blinn-phong
+    Eigen::Vector3f h = l + -d;
+    h.normalize();
+
+    // make specular
+    double hdn = h.dot(n);
+    double shine = (1.0f/hitShape->finish.roughness);
+    double spec = hitShape->finish.specular*pow(hdn, shine);
+
+    Eigen::Vector3f ret = hitShape->color.head<3>()*spec;
+
+    ret[0] *= lightCol[0];
+    ret[1] *= lightCol[1];
+    ret[2] *= lightCol[2];
+
+    return ret;
+}
+
+Eigen::Vector3f BlinnPhong(const Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                     const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol) {
     // prepare what is need for blinn-phong
     Eigen::Vector3f h = l + -d;
@@ -44,7 +64,7 @@ Eigen::Vector3f BlinnPhong(Shape *hitShape, const Eigen::Vector3f &n, const Eige
 
 
 // http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
-Eigen::Vector3f CookTorrance(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+Eigen::Vector3f CookTorrance(const Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                         const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol, 
                                         double curIOR, double newIOR) {
     Eigen::Vector3f v = -d;
@@ -96,7 +116,7 @@ Eigen::Vector3f CookTorrance(Shape *hitShape, const Eigen::Vector3f &n, const Ei
     return ret;
 }
 
-Eigen::Vector3f ToonSorta(Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+Eigen::Vector3f ToonSorta(const Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                 const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol, 
                                 Eigen::Vector3f *retColor) {
     Eigen::Vector3f baseColor = hitShape->color.head<3>();

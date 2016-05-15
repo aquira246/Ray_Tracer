@@ -36,6 +36,7 @@ class Scene
 
 		Eigen::Vector3f ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft);
         bool CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Vector3f &hitNormal);   // in public for testing reasons
+        bool ShadowHit(const Ray &checkRay, double lightDistance);
 
     	static int Parse(FILE* infile, Scene &scene);
 

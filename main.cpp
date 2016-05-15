@@ -20,6 +20,7 @@ int width = 640;
 int height = 480;
 int shader = 0;
 Scene scene;
+bool useAA = true;
 
 int main(int argc, char **argv)
 {
@@ -84,7 +85,11 @@ int main(int argc, char **argv)
    scene.setShader(shader);
 
    std::vector<Ray> laserbeams;
-   laserbeams.resize(9);
+   if (useAA)
+      laserbeams.resize(9);
+   else
+      laserbeams.resize(1);
+
    double t;
    Eigen::Vector3f clr;
 
@@ -99,8 +104,11 @@ int main(int argc, char **argv)
          for (int x = 0; x < width; ++x)
          {
             // calculate camera ray
-            // Ray laserbeam = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
-            ComputeCameraRay_AntiAliasing(x, y, width, height, scene.cameras[c], laserbeams);
+            if (useAA) {
+               ComputeCameraRay_AntiAliasing(x, y, width, height, scene.cameras[c], laserbeams);
+            } else {
+               laserbeams[0] = ComputeCameraRay(x, y, width, height, scene.cameras[c]);
+            }
             
             clr << 0, 0, 0;
 

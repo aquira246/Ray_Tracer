@@ -10,15 +10,18 @@ Box::Box() {
    radius = 1.0f;
    corner1 = Eigen::Vector3f(-.5, -.5, -.5);
    corner2 = Eigen::Vector3f(.5, .5, .5);
+   isBounding = false;
 }
 
-Box::Box(Eigen::Vector3f c1, Eigen::Vector3f c2) {
+Box::Box(Eigen::Vector3f c1, Eigen::Vector3f c2, bool bounding) {
    center = Eigen::Vector3f(0,0,0);
    normal = Eigen::Vector3f(0,0,-1);
    radius = 1.0f;
 
    corner1 = c1;
    corner2 = c2;
+   isBounding = bounding;
+   transformed = false;
 }
 
 Box::~Box(){
@@ -44,19 +47,37 @@ void float_swap(float &a, float &b) {
    b = hold;
 }
 
-// TODO test. This is untested. Also switch to unaxis aligned
-// http://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
-bool Box::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
-   float tmin = (corner1(0) - ray.position(0)) / ray.direction(0);
-   float tmax = (corner2(0) - ray.position(0)) / ray.direction(0);
+bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
+   t = -1;
 
-   if (tmin > tmax) float_swap(tmin, tmax);
+   // don't do any work when this is a bounding box with no contents
+   if (isBounding && contents.size() == 0)
+      return false;
 
-   float tymin = (corner1(1) - ray.position(1)) / ray.direction(1);
-   float tymax = (corner2(1) - ray.position(1)) / ray.direction(1);
+   Eigen::Vector3f eye, dir;
+
+   if (transformed) {
+      transformRay(ray, &eye, &dir);
+   } else {
+      dir = ray.direction;
+      eye = ray.position;
+   }
+
+   // calculate the mins and max
+   float txmin = (corner1(0) - eye(0)) / dir(0);
+   float txmax = (corner2(0) - eye(0)) / dir(0);
+
+   if (txmin > txmax) float_swap(txmin, txmax);
+
+   float tmin = txmin;
+   float tmax = txmax;
+
+   float tymin = (corner1(1) - eye(1)) / dir(1);
+   float tymax = (corner2(1) - eye(1)) / dir(1);
 
    if (tymin > tymax) float_swap(tymin, tymax);
 
+   // cut out early if there is for sure no hit
    if ((tmin > tymax) || (tymin > tmax))
       return false;
 
@@ -66,23 +87,80 @@ bool Box::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
    if (tymax < tmax)
       tmax = tymax;
 
-   float tzmin = (corner1(2) - ray.position(2)) / ray.direction(2);
-   float tzmax = (corner2(2) - ray.position(2)) / ray.direction(2);
+   float tzmin = (corner1(2) - eye(2)) / dir(2);
+   float tzmax = (corner2(2) - eye(2)) / dir(2);
 
    if (tzmin > tzmax) float_swap(tzmin, tzmax);
 
    if ((tmin > tzmax) || (tzmin > tmax))
       return false;
 
-   if (tzmin > tmin)
-      tmin = tzmin;
+   if (isBounding) {
+      bool hit = false;
+      double checkingT = 0;
+      Eigen::Vector3f tempNormal;
+      Shape *testShape;
 
-   if (tzmax < tmax)
-      tmax = tzmax;
+      // check if we hit a shape
+      for (unsigned int i = 0; i < contents.size(); ++i)
+      {
+         if (contents[i]->CalculateHit(ray, checkingT, testShape, &tempNormal)) {
+            if (checkingT > 0 && (checkingT < t || !hit)) {
+               t = checkingT;
+               hit = true;
+               *hitNormal = tempNormal;
+               hitShape = testShape;
+            }
+         }
+      }
 
-   if (tmin > tmax) float_swap(tmin, tmax);
+      return hit;
+   } else {
+      if (tzmin > tmin)
+         tmin = tzmin;
 
-   t = tmin;
-   return true;
+      if (tzmax < tmax)
+         tmax = tzmax;
+
+      if (tmin > tmax) float_swap(tmin, tmax);
+
+      t = tmin;
+
+      // calculate normal TODO IS WRONG
+      Eigen::Vector3f hitPt = eye + dir*t;
+      Eigen::Vector3f norm;
+
+      if (hitPt(0) <= txmin + kEpsilon)
+         norm(0) = -1;
+      else if (hitPt(0) >= txmax - kEpsilon)
+         norm(0) = 1;
+
+      if (hitPt(1) <= tymin + kEpsilon)
+         norm(1) = -1;
+      else if (hitPt(1) >= tymax - kEpsilon)
+         norm(1) = 1;
+
+      if (hitPt(2) <= tzmin + kEpsilon)
+         norm(2) = -1;
+      else if (hitPt(2) >= tzmax - kEpsilon)
+         norm(2) = 1;
+
+      norm.normalize();
+
+      //transform normal
+      if (transformed) {
+         // sets the hitnormal in the transformNormal function
+         transformNormal(norm, hitNormal);
+      } else {
+         *hitNormal = norm;
+      }
+
+      hitShape = this;
+
+      norm = *hitNormal;
+      // cout << norm(0) << ", " << norm(1) << "," << norm(2) << endl << endl;
+
+      return true;
+   }
 }
 

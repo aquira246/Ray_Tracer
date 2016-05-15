@@ -106,8 +106,8 @@ int Scene::Parse(FILE* infile, Scene &scene) {
 }
 
 Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft) {
+    // const hitShape
     Shape *hitShape = NULL;
-    Shape *shadowShape = NULL;
     Eigen::Vector3f hitNormal;
 
     // see if ray hits anything
@@ -121,7 +121,8 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
         Eigen::Vector3f hitPt = ray.position + ray.direction*t;
 
         // determine if we are inside or outside the object, and set the IORs accordingly
-        bool isInside = (-ray.direction).dot(hitNormal) < 0;
+        double cosI = (-ray.direction).dot(hitNormal);
+        bool isInside = cosI < 0;
         double oldIOR, newIOR;
 
         if (isInside) {
@@ -138,6 +139,8 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
         // set the color to ambient
         Eigen::Vector3f baseColor = hitShape->color.head<3>();
         Eigen::Vector3f retColor = baseColor*hitShape->finish.ambient;
+        Eigen::Vector3f specCol;
+        specCol << 0, 0, 0;
 
         //check to see if the hit object is in shadow for each light
         for (unsigned int i = 0; i < lights.size(); ++i)
@@ -149,23 +152,24 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
             Ray shadowRay = Ray(hitPt + l*EPSILON, l);  // epsilon test for shadow ray
             
             // if the spot is not in shadow because there is no object between it and the light
-            double s = -1;
-            Eigen::Vector3f tempNormal;
-            bool inShadow = (CheckHit(shadowRay, shadowShape, s, tempNormal) || s > lightDistance);
-
-            if(!inShadow) {
+            if(!ShadowHit(shadowRay, lightDistance)) {
                 Eigen::Vector3f lightCol = lights[i].color.head<3>();
 
-                // pick our shader
-                if (shader == 0) {
-                    retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol);
-                } else if (shader == 1) {
-                    retColor += CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR);
-                } else if (shader == 2) {
-                    retColor += ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor);
+                // if statement not here if doing old refraction. We would just do the else
+                if (hitShape->finish.refraction > 0 && bouncesLeft > 0) {
+                    specCol += BlinnSpec(hitShape, hitNormal, l, ray.direction, lightCol);                    
                 } else {
-                    cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
-                    retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction);
+                    // pick our shader
+                    if (shader == 0) {
+                        retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol);
+                    } else if (shader == 1) {
+                        retColor += CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR);
+                    } else if (shader == 2) {
+                        retColor += ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor);
+                    } else {
+                        cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
+                        retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction);
+                    }
                 }
             } else {
                 #ifdef UNIT_TEST
@@ -199,15 +203,29 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 cout << refrRay.direction[0] << ", " << refrRay.direction[1] << ", " << refrRay.direction[2] << "}\n";
                 #endif
 
-                float R0 = pow(((oldIOR - newIOR)/(oldIOR + newIOR)), 2);
-                float R = R0 + (1.0 - R0)*pow(1.0 - hitNormal.dot(-ray.direction), 5.0);   //schlick's approximation
-
+                float R;
                 double temp = -1;
                 double refractT = -1;
                 if (!totalReflection) {
+                    //schlick's approximation
+                    float R0 = pow(((oldIOR - newIOR)/(oldIOR + newIOR)), 2);
+                    float cosX = cosI;
+                    
+                    // if the oldIOR > newIOR then the old schlick's approx doesn't work
+                    if (oldIOR > newIOR) {
+                        const double iorDiv = oldIOR/newIOR;
+                        const double sinT2 = iorDiv*iorDiv*(1 - cosI*cosI);
+                        cosX = sqrt(1.0 - sinT2);
+                    }
+
+                    R = R0 + (1.0 - R0)*pow(1.0 - cosX, 5.0);
+
+                    // calculate refraction color
                     refractColor = ShootRayIntoScene(refrRay, refractT, oldIOR, newIOR, bouncesLeft - 1);
                 } else {
-                    R = 0;
+                    R = 1;
+                    reflectVal += refractVal;
+                    refractVal = 0;
                     #ifdef UNIT_TEST
                     cout << "Total Internal Reflection" << endl;
                     #endif
@@ -217,19 +235,21 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1);
 
                 /* beers law */
-                Eigen::Vector3f atten = .15f*baseColor* -fabs(refractT);
-                Eigen::Vector3f intensity;
-                intensity[0] = expf(atten[0]);
-                intensity[1] = expf(atten[1]);
-                intensity[2] = expf(atten[2]);
+                // Eigen::Vector3f atten = .15f*baseColor* -fabs(refractT);
+                // Eigen::Vector3f intensity;
+                // intensity[0] = expf(atten[0]);
+                // intensity[1] = expf(atten[1]);
+                // intensity[2] = expf(atten[2]);
 
-                refractColor[0] = refractColor[0]*intensity[0];
-                refractColor[1] = refractColor[1]*intensity[1];
-                refractColor[2] = refractColor[2]*intensity[2];
+                // refractColor[0] = refractColor[0]*intensity[0];
+                // refractColor[1] = refractColor[1]*intensity[1];
+                // refractColor[2] = refractColor[2]*intensity[2];
 
-                retColor = R*refractColor + (1 - R)*reflectColor;
+                // cout << R << endl;
+                retColor = (1 - R)*refractColor + (R)*reflectColor;
+                retColor += (1 - refractVal - reflectVal)*specCol;
 
-                /* previously */
+                /* previously di this for refraction (without the if statement above) */
 //                retColor = (1 - refractVal - reflectVal)*retColor + refractVal*refractColor + reflectColor*reflectColor;
 
             }  
@@ -267,21 +287,40 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
     }
 }
 
+bool Scene::ShadowHit(const Ray &checkRay, double lightDistance) {
+    double checkingT = 0;
+    Eigen::Vector3f tempNormal;
+    Shape *shadowShape;
+
+    // check if we hit a shape
+    for (unsigned int i = 0; i < shapes.size(); ++i)
+    {
+        if ((*shapes[i]).CalculateHit(checkRay, checkingT, shadowShape, &tempNormal)) {
+            if (checkingT > 0 && checkingT < lightDistance) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool Scene::CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Vector3f &hitNormal) {
     bool hit = false;
     double checkingT = 0;
     t = -1;
     Eigen::Vector3f tempNormal;
+    Shape *testShape;
 
     // check if we hit a shape
     for (unsigned int i = 0; i < shapes.size(); ++i)
     {
-        if ((*shapes[i]).CalculateHit(checkRay, checkingT, &tempNormal)) {
+        if (shapes[i]->CalculateHit(checkRay, checkingT, testShape, &tempNormal)) {
             if (checkingT > 0 && (checkingT < t || !hit)) {
-                hitShape = shapes[i];
                 t = checkingT;
                 hit = true;
                 hitNormal = tempNormal;
+                hitShape = testShape;
             }
         }
     }

@@ -40,7 +40,7 @@ class Shape
 
       static void ParseModifiers(Shape &shape);
       
-      virtual bool CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
+      virtual bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
          return 0;
       }
 

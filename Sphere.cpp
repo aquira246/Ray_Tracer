@@ -46,7 +46,7 @@ void Sphere::Parse(Sphere &sphere) {
    ParseRightCurly();
 }
 
-bool Sphere::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal) {
+bool Sphere::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
    Eigen::Vector3f dir, dist, eye;
 
    if (transformed) {
@@ -96,5 +96,7 @@ bool Sphere::CalculateHit(const Ray &ray, double &t, Eigen::Vector3f *hitNormal)
       *hitNormal = norm;
    }
    
+   hitShape = this;
+
    return true;
 }
