@@ -235,15 +235,17 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1);
 
                 /* beers law */
-                // Eigen::Vector3f atten = .15f*baseColor* -fabs(refractT);
-                // Eigen::Vector3f intensity;
-                // intensity[0] = expf(atten[0]);
-                // intensity[1] = expf(atten[1]);
-                // intensity[2] = expf(atten[2]);
+                // if (!isInside) {
+                //     Eigen::Vector3f atten = .15f*baseColor* -fabs(refractT);
+                //     Eigen::Vector3f intensity;
+                //     intensity[0] = expf(atten[0]);
+                //     intensity[1] = expf(atten[1]);
+                //     intensity[2] = expf(atten[2]);
 
-                // refractColor[0] = refractColor[0]*intensity[0];
-                // refractColor[1] = refractColor[1]*intensity[1];
-                // refractColor[2] = refractColor[2]*intensity[2];
+                //     refractColor[0] = refractColor[0]*intensity[0];
+                //     refractColor[1] = refractColor[1]*intensity[1];
+                //     refractColor[2] = refractColor[2]*intensity[2];
+                // }
 
                 // cout << R << endl;
                 retColor = (1 - R)*refractColor + (R)*reflectColor;
