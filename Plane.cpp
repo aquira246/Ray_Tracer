@@ -39,8 +39,16 @@ void Plane::Parse(Plane &plane) {
    ParseRightCurly();
 }
 
+void Plane::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
+   if (transformed) {
+      transformNormal(normal, hitNormal);
+   } else {
+      *hitNormal = normal;
+   }
+}
+
 // t = (n dot (plane point - ray position))/(n dot ray direction)
-bool Plane::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
+bool Plane::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    t = -1;
 
    Eigen::Vector3f dir, pos;
@@ -62,12 +70,6 @@ bool Plane::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vec
    }
 
    if (t < 0) return false;
-
-   if (transformed) {
-      transformNormal(normal, hitNormal);
-   } else {
-      *hitNormal = normal;
-   }
 
    hitShape = this;
 

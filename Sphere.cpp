@@ -46,7 +46,32 @@ void Sphere::Parse(Sphere &sphere) {
    ParseRightCurly();
 }
 
-bool Sphere::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
+void Sphere::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
+   Eigen::Vector3f dir, eye;
+
+   if (transformed) {
+      transformRay(ray, &eye, &dir);
+   } else {
+      dir = ray.direction;
+      eye = ray.position;
+   }
+
+   Eigen::Vector3f hitPt = eye + dir*t;
+   Eigen::Vector3f norm = (hitPt - center);
+   norm.normalize();
+
+   if (transformed) {
+      // sets the hitnormal in the transformNormal function
+      transformNormal(norm, hitNormal);
+      // Eigen::Vector3f n = *hitNormal;
+      // cout << "Normal: " << norm(0) << ", " << norm(1) << ", " << norm(2) 
+      //       << "    xform: " << n[0] << ", " << n[1] << ", " << n[2] << "\n";
+   } else {
+      *hitNormal = norm;
+   }
+}
+
+bool Sphere::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    Eigen::Vector3f dir, dist, eye;
 
    if (transformed) {
@@ -80,20 +105,6 @@ bool Sphere::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Ve
       } else {
          t = (double)(max(plusOp, minOp));
       }
-   }
-
-   Eigen::Vector3f hitPt = eye + dir*t;
-   Eigen::Vector3f norm = (hitPt - center);
-   norm.normalize();
-
-   if (transformed) {
-      // sets the hitnormal in the transformNormal function
-      transformNormal(norm, hitNormal);
-      // Eigen::Vector3f n = *hitNormal;
-      // cout << "Normal: " << norm(0) << ", " << norm(1) << ", " << norm(2) 
-      //       << "    xform: " << n[0] << ", " << n[1] << ", " << n[2] << "\n";
-   } else {
-      *hitNormal = norm;
    }
    
    hitShape = this;

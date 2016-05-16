@@ -63,10 +63,18 @@ void Triangle::Parse(Triangle &triangle) {
    triangle.Initialize();
 }
 
+void Triangle::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
+   if (transformed) {
+      transformNormal(normal, hitNormal);
+   } else {
+      *hitNormal = normal;
+   }
+}
+
 // help from 
 // http://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection
 // same method as what we did in class but cleaner!
-bool Triangle::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
+bool Triangle::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    double u, v;
    Eigen::Vector3f ab = b - a;
    Eigen::Vector3f ac = c - a;
@@ -109,12 +117,6 @@ bool Triangle::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::
       return false;
 
    t = ac.dot(qvec)*inverseDet;
-
-   if (transformed) {
-      transformNormal(normal, hitNormal);
-   } else {
-      *hitNormal = normal;
-   }
 
    hitShape = this;
 

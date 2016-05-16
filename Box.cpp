@@ -47,7 +47,65 @@ void float_swap(float &a, float &b) {
    b = hold;
 }
 
-bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
+void Box::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
+   if (!isBounding) {
+      Eigen::Vector3f eye, dir;
+
+      if (transformed) {
+         transformRay(ray, &eye, &dir);
+      } else {
+         dir = ray.direction;
+         eye = ray.position;
+      }
+
+      float txmin = (corner1(0) - eye(0)) / dir(0);
+      float txmax = (corner2(0) - eye(0)) / dir(0);
+      
+      float tymin = (corner1(1) - eye(1)) / dir(1);
+      float tymax = (corner2(1) - eye(1)) / dir(1);
+
+      float tzmin = (corner1(2) - eye(2)) / dir(2);
+      float tzmax = (corner2(2) - eye(2)) / dir(2);
+
+      if (txmin > txmax) float_swap(txmin, txmax);
+      if (tymin > tymax) float_swap(tymin, tymax);
+      if (tzmin > tzmax) float_swap(tzmin, tzmax);
+
+      // calculate normal TODO IS WRONG
+      Eigen::Vector3f hitPt = eye + dir*t;
+      Eigen::Vector3f norm;
+
+      if (hitPt(0) <= txmin + kEpsilon)
+         norm(0) = -1;
+      else if (hitPt(0) >= txmax - kEpsilon)
+         norm(0) = 1;
+
+      if (hitPt(1) <= tymin + kEpsilon)
+         norm(1) = -1;
+      else if (hitPt(1) >= tymax - kEpsilon)
+         norm(1) = 1;
+
+      if (hitPt(2) <= tzmin + kEpsilon)
+         norm(2) = -1;
+      else if (hitPt(2) >= tzmax - kEpsilon)
+         norm(2) = 1;
+
+      norm.normalize();
+
+      //transform normal
+      if (transformed) {
+         // sets the hitnormal in the transformNormal function
+         transformNormal(norm, hitNormal);
+      } else {
+         *hitNormal = norm;
+      }
+
+      norm = *hitNormal;
+      // cout << norm(0) << ", " << norm(1) << "," << norm(2) << endl << endl;
+   }
+}
+
+bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    t = -1;
 
    // don't do any work when this is a bounding box with no contents
@@ -104,11 +162,10 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vecto
       // check if we hit a shape
       for (unsigned int i = 0; i < contents.size(); ++i)
       {
-         if (contents[i]->CalculateHit(ray, checkingT, testShape, &tempNormal)) {
+         if (contents[i]->CalculateHit(ray, checkingT, testShape)) {
             if (checkingT > 0 && (checkingT < t || !hit)) {
                t = checkingT;
                hit = true;
-               *hitNormal = tempNormal;
                hitShape = testShape;
             }
          }
@@ -126,39 +183,7 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vecto
 
       t = tmin;
 
-      // calculate normal TODO IS WRONG
-      Eigen::Vector3f hitPt = eye + dir*t;
-      Eigen::Vector3f norm;
-
-      if (hitPt(0) <= txmin + kEpsilon)
-         norm(0) = -1;
-      else if (hitPt(0) >= txmax - kEpsilon)
-         norm(0) = 1;
-
-      if (hitPt(1) <= tymin + kEpsilon)
-         norm(1) = -1;
-      else if (hitPt(1) >= tymax - kEpsilon)
-         norm(1) = 1;
-
-      if (hitPt(2) <= tzmin + kEpsilon)
-         norm(2) = -1;
-      else if (hitPt(2) >= tzmax - kEpsilon)
-         norm(2) = 1;
-
-      norm.normalize();
-
-      //transform normal
-      if (transformed) {
-         // sets the hitnormal in the transformNormal function
-         transformNormal(norm, hitNormal);
-      } else {
-         *hitNormal = norm;
-      }
-
       hitShape = this;
-
-      norm = *hitNormal;
-      // cout << norm(0) << ", " << norm(1) << "," << norm(2) << endl << endl;
 
       return true;
    }

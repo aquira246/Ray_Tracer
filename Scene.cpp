@@ -291,13 +291,12 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
 
 bool Scene::ShadowHit(const Ray &checkRay, double lightDistance) {
     double checkingT = 0;
-    Eigen::Vector3f tempNormal;
     Shape *shadowShape;
 
     // check if we hit a shape
     for (unsigned int i = 0; i < shapes.size(); ++i)
     {
-        if ((*shapes[i]).CalculateHit(checkRay, checkingT, shadowShape, &tempNormal)) {
+        if ((*shapes[i]).CalculateHit(checkRay, checkingT, shadowShape)) {
             if (checkingT > 0 && checkingT < lightDistance) {
                 return true;
             }
@@ -311,21 +310,22 @@ bool Scene::CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Ve
     bool hit = false;
     double checkingT = 0;
     t = -1;
-    Eigen::Vector3f tempNormal;
     Shape *testShape;
 
     // check if we hit a shape
     for (unsigned int i = 0; i < shapes.size(); ++i)
     {
-        if (shapes[i]->CalculateHit(checkRay, checkingT, testShape, &tempNormal)) {
+        if (shapes[i]->CalculateHit(checkRay, checkingT, testShape)) {
             if (checkingT > 0 && (checkingT < t || !hit)) {
                 t = checkingT;
                 hit = true;
-                hitNormal = tempNormal;
                 hitShape = testShape;
             }
         }
     }
+
+    if (hit)
+        hitShape->GetNormal(checkRay, &hitNormal, t);
 
     return hit;
 }

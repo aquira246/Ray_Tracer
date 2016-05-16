@@ -40,12 +40,16 @@ class Shape
 
       static void ParseModifiers(Shape &shape);
       
-      virtual bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal) {
+      virtual bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
          return 0;
       }
 
       virtual int GetShape() {
          return SHAPE_ID;
+      }
+
+      virtual void GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
+         
       }
 
       void transformRay(const Ray &ray, Eigen::Vector3f *position, Eigen::Vector3f *direction);

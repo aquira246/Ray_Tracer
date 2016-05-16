@@ -20,10 +20,11 @@ class Triangle: public Shape
       ~Triangle();
       
       static void Parse(Triangle &triangle);
-      bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal);
+      bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape);
       virtual int GetShape() {
          return TRIANGLE_ID;
       }
+      void GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t);
 
    protected:
    // Parts of a triangle

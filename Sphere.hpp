@@ -22,7 +22,8 @@ class Sphere: public Shape
       static void Parse(Sphere &sphere);
 
 		// Shape has a center and radius, the only components of a sphere
-      bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape, Eigen::Vector3f *hitNormal);
+      bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape);
+      void GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t);
 
       virtual int GetShape() {
          return SPHERE_ID;
