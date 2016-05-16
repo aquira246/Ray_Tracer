@@ -1,4 +1,4 @@
-CC=g++ 
+CC=g++
 CFLAGS=-ansi -pedantic -Wno-deprecated -std=c++0x -Wall -pedantic -O3
 INC=-I$(EIGEN3_INCLUDE_DIR) -I./ 
 LIB=-DGL_GLEXT_PROTOTYPES -lglut -lGL -lGLU

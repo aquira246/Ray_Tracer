@@ -69,11 +69,9 @@ void Shape::transformRay(const Ray &ray, Eigen::Vector3f *position, Eigen::Vecto
    Eigen::Vector4f oldDir(ray.direction[0], ray.direction[1], ray.direction[2], 0);
 
    Eigen::Vector4f oldPos(ray.position[0], ray.position[1], ray.position[2], 1);
-
-   Eigen::Vector4f transformedDir  = (inverseM0*oldDir);
-   Eigen::Vector4f transformedPos = (inverseM0*oldPos);
-   *direction = transformedDir.head<3>();
-   *position = transformedPos.head<3>();
+   
+   *direction = (inverseM0*oldDir).head<3>();
+   *position = (inverseM0*oldPos).head<3>();
 }
 
 void Shape::transformNormal(const Eigen::Vector3f &hitNormal, Eigen::Vector3f *transformedNormal) {
@@ -81,8 +79,7 @@ void Shape::transformNormal(const Eigen::Vector3f &hitNormal, Eigen::Vector3f *t
 
    Eigen::Vector4f hold = inverseTransposeM0*transNormal;
    
-   *transformedNormal = hold.head<3>();
-   transformedNormal->normalize();
+   *transformedNormal = (hold.head<3>()).normalized();
 }
 
 // return vector: inxex 1: how many answers there are

@@ -12,3 +12,4 @@ pre-parser/*
 bugs/*
 gmon.out
 gprof*
+profiling/*
