@@ -20,7 +20,7 @@ int width = 640;
 int height = 480;
 int shader = 0;
 Scene scene;
-bool useAA = false;//true;
+bool useAA = true;
 
 int main(int argc, char **argv)
 {

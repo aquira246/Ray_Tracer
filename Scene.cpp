@@ -156,9 +156,9 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 Eigen::Vector3f lightCol = lights[i].color.head<3>();
 
                 // if statement not here if doing old refraction. We would just do the else
-                // if (hitShape->finish.refraction > 0 && bouncesLeft > 0) {
-                //     specCol += BlinnSpec(hitShape, hitNormal, l, ray.direction, lightCol);                    
-                // } else {
+                if (hitShape->finish.refraction > 0 && bouncesLeft > 0) {
+                    specCol += BlinnSpec(hitShape, hitNormal, l, ray.direction, lightCol);                    
+                } else {
                     // pick our shader
                     if (shader == 0) {
                         retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol);
@@ -170,7 +170,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                         cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
                         retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction);
                     }
-                // }
+                }
             } else {
                 #ifdef UNIT_TEST
                 cout << "In shadow" << endl;
@@ -248,11 +248,11 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 // }
 
                 // cout << R << endl;
-                // retColor = (1 - R)*refractColor + (R)*reflectColor;
-                // retColor += (1 - refractVal - reflectVal)*specCol;
+                retColor = (1 - R)*refractColor + (R)*reflectColor;
+                retColor += (1 - refractVal - reflectVal)*specCol;
 
                 /* previously did this for refraction (without the if statement above) */
-               retColor = (1 - refractVal - reflectVal)*retColor + refractVal*refractColor + reflectVal*reflectColor;
+               // retColor = (1 - refractVal - reflectVal)*retColor + refractVal*refractColor + reflectVal*reflectColor;
 
             }  
             // if we have reflection calculate it
