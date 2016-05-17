@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+void printBar(int current, int max, int length) {
+   static int r = 0;
+   int NumEquals = ((double)current/(double)max)*length;
+      cout << "[";
+      for (int i = 0; i < length; ++i)
+      {
+         if (i <= NumEquals) {
+            cout << "=";
+         } else if (i == NumEquals + 1) {
+            switch(r++%8) {
+               case 0:
+               cout << "/";
+               break;
+               case 1:
+               cout << "-";
+               break;
+               case 2:
+               cout << "\\";
+               break;
+               case 3:
+               cout << "|";
+               break;
+               case 4:
+               cout << "/";
+               break;
+               case 5:
+               cout << "-";
+               break;
+               case 6:
+               cout << "\\";
+               break;
+               case 7:
+               cout << "|";
+               break;
+            }
+         } else {
+            cout << " ";
+         }
+      }
+
+      cout << "]\r";
+      std::cout.flush();
+}

@@ -12,6 +12,7 @@
 #include "Ray.hpp"
 #include "Scene.hpp"
 #include "unit_tests.hpp"
+#include "LoadingBar.h"
 
 using namespace std;
 
@@ -20,7 +21,7 @@ int width = 640;
 int height = 480;
 int shader = 0;
 Scene scene;
-bool useAA = true;
+bool useAA = false;//true;
 
 int main(int argc, char **argv)
 {
@@ -107,6 +108,7 @@ int main(int argc, char **argv)
    double t;
    Eigen::Vector3f clr;
 
+   cout << endl;
    for (unsigned int c = 0; c < scene.cameras.size(); ++c)
    {
       // create picture
@@ -150,7 +152,11 @@ int main(int argc, char **argv)
             // set the image pixel to be that color
             img->pixel(x, y, clr);
          }
+
+         cout << "Ray Tracing: ";
+         printBar(y, height, 40);
       }
+      cout << endl;
 
       // draw picture to sample.tga
       string outfile = fileName;

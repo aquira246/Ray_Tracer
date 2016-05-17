@@ -34,7 +34,7 @@ void Finish::Parse(Finish &finish) {
          break;
       case T_ROUGHNESS:
          finish.roughness = ParseDouble();
-         assert(finish.roughness > 0 && finish.roughness <= 1);
+         //assert(finish.roughness > 0 && finish.roughness <= 1);
          break;
       case T_REFLECTION:
          finish.reflection = ParseDouble();

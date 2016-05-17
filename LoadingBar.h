@@ -1,0 +1,1 @@
+void printBar(int current, int max, int length);

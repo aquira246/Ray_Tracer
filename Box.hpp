@@ -25,6 +25,9 @@ class Box: public Shape
         Eigen::Vector3f normal;
         Eigen::Vector3f corner1;
         Eigen::Vector3f corner2;
+
+        float xmin, xmax, ymin, ymax, zmin, zmax;
+
         virtual int GetShape() {
             return BOX_ID;
         }

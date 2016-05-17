@@ -64,13 +64,6 @@ int Scene::Parse(FILE* infile, Scene &scene) {
             Sphere::Parse(*sphere);
             scene.shapes.push_back(sphere);
             scene.spheres.push_back(*sphere);
-            // cout << "Sphere\n";
-            // cout << sphere->m0 << endl;
-            // cout << "inverse: " << endl;
-            // cout << sphere->inverseM0 << endl;
-            // cout << "transpose: " << endl;
-            // cout << sphere->inverseTransposeM0 << endl;
-            // cout << "is transformed " << sphere->transformed << endl << endl;
             break;
          case T_PLANE:
             plane = new Plane();
