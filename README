@@ -35,7 +35,7 @@ Current Status:
     Schlick's refractin: working (though no beers law)
     Geometric Transforms: working
     Anti-Aliasing: working
-    Box intersections: Working, but the normals are wrong. But since these are bounding boxes, it's not important!
+    Box intersections: Working
     multiple lights: working
     General sanity: hahahahahahahahahhahahahahahahhhhahaaaahahahahhahahaAHHAHAhAHhahAAHahahAHHAsdkfhaosjhfbwkjegfuakhsbfuekhs
 
@@ -44,4 +44,3 @@ Parsing: what is missing
         
 Non-working shapes:
         Cones
-        Boxes - getting normals from collision

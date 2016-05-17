@@ -49,6 +49,7 @@ void Sphere::Parse(Sphere &sphere) {
 void Sphere::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
    Eigen::Vector3f dir, eye;
 
+   // transform the ray into the object's world
    if (transformed) {
       transformRay(ray, &eye, &dir);
    } else {
@@ -56,16 +57,15 @@ void Sphere::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
       eye = ray.position;
    }
 
+   // calculate the normal
    Eigen::Vector3f hitPt = eye + dir*t;
    Eigen::Vector3f norm = (hitPt - center);
    norm.normalize();
 
+   // transform the normal back 
    if (transformed) {
       // sets the hitnormal in the transformNormal function
       transformNormal(norm, hitNormal);
-      // Eigen::Vector3f n = *hitNormal;
-      // cout << "Normal: " << norm(0) << ", " << norm(1) << ", " << norm(2) 
-      //       << "    xform: " << n[0] << ", " << n[1] << ", " << n[2] << "\n";
    } else {
       *hitNormal = norm;
    }
@@ -76,12 +76,13 @@ bool Sphere::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
 
    if (transformed) {
       transformRay(ray, &eye, &dir);
-      dist = eye - center;
    } else {
       dir = ray.direction;
       eye = ray.position;
-      dist = ray.position - center;
    }
+
+   dist = eye - center;
+
 
    double A = dir.dot(dir);
    double B = (2*dir).dot(dist);
