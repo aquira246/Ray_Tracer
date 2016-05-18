@@ -5,21 +5,13 @@
 using namespace std;
 
 Plane::Plane() {
-   center = Eigen::Vector3f(0,0,0);
    normal = Eigen::Vector3f(0,0,-1);
-   radius = 1.0f;
-   #ifndef CULLING
-   isFlat = true;
-   #endif
+   center = Eigen::Vector3f(0,0,-1);
 }
 
 Plane::Plane(Eigen::Vector3f c, Eigen::Vector3f n, float r) {
-   center = c;
    normal = n;
-   radius = r;
-   #ifndef CULLING
-   isFlat = true;
-   #endif
+   center = c;
 }
 
 Plane::~Plane(){
@@ -33,8 +25,6 @@ void Plane::Parse(Plane &plane) {
    ParseComma();
    plane.center = ParseDouble() * plane.normal;
    Shape::ParseModifiers(plane);
-   //planes have infinite radius so lets just use -1 to represent this
-   plane.radius = -1;
 
    ParseRightCurly();
 }

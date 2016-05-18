@@ -22,7 +22,6 @@ class Box: public Shape
 
         bool isBounding;
         std::vector<Shape *> contents;
-        Eigen::Vector3f normal;
         Eigen::Vector3f corner1;
         Eigen::Vector3f corner2;
 

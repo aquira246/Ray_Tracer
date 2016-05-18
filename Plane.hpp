@@ -21,6 +21,7 @@ class Plane: public Shape
       static void Parse(Plane &plane);
 
       Eigen::Vector3f normal;
+      Eigen::Vector3f center;
       // Shape has a center and radius
 
       bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape);

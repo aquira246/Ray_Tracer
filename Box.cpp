@@ -12,32 +12,25 @@ void float_swap(float &a, float &b) {
 }
 
 Box::Box() {
-   center = Eigen::Vector3f(0,0,0);
-   normal = Eigen::Vector3f(0,0,-1);
-   radius = 1.0f;
    corner1 = Eigen::Vector3f(-.5, -.5, -.5);
    corner2 = Eigen::Vector3f(.5, .5, .5);
    isBounding = false;
 }
 
 Box::Box(Eigen::Vector3f c1, Eigen::Vector3f c2, bool bounding) {
-   center = Eigen::Vector3f(0,0,0);
-   normal = Eigen::Vector3f(0,0,-1);
-   radius = 1.0f;
-
    corner1 = c1;
    corner2 = c2;
    isBounding = bounding;
    transformed = false;
 
-    xmin = corner1(0);
-    xmax = corner2(0);
+   xmin = corner1(0);
+   xmax = corner2(0);
    
-    ymin = corner1(1);
-    ymax = corner2(1);
+   ymin = corner1(1);
+   ymax = corner2(1);
 
-    zmin = corner1(2);
-    zmax = corner2(2);
+   zmin = corner1(2);
+   zmax = corner2(2);
 
    if (xmin > xmax) float_swap(xmin, xmax);
    if (ymin > ymax) float_swap(ymin, ymax);
@@ -86,7 +79,7 @@ void Box::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
 
       // calculate normal
       Eigen::Vector3f hitPt = eye + dir*t;
-      Eigen::Vector3f norm;
+      Eigen::Vector3f norm = Eigen::Vector3f(0,0,0);
 
       if (hitPt(0) <= xmin + kEpsilon)
          norm(0) = -1;

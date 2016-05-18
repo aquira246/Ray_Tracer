@@ -25,6 +25,7 @@ class Triangle: public Shape
          return TRIANGLE_ID;
       }
       void GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t);
+      void GetTransformedPts(Eigen::Vector3f *ta, Eigen::Vector3f *tb, Eigen::Vector3f *tc);
 
    protected:
    // Parts of a triangle

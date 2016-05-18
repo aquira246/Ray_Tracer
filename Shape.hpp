@@ -27,16 +27,8 @@ class Shape
       Finish finish;
       Eigen::Vector4f color;
 
-      // No matter the shape we generate a bounding sphere
-      Eigen::Vector3f center;
-      float radius;
-
       Eigen::Matrix4f m0, inverseM0, inverseTransposeM0;
       bool transformed;
-
-      #ifndef CULLING
-      bool isFlat; // flat objects need to have 2 faces checked
-      #endif
 
       static void ParseModifiers(Shape &shape);
       

@@ -35,17 +35,8 @@ void Triangle::Initialize() {
    // no need to normalize
    normal = ab.cross(ac);
    areaSqr = normal.norm();
-   // the not offsetted center of the circumsphere
-   center = normal.cross(ab) * ac.norm() + ac.cross(normal) * ab.norm();
-   // radius ofthe circumsphere
-   radius = center.norm();
-   // offset the center properly in the world
-   center += a;
-   normal.normalize();
 
-   #ifndef CULLING
-   isFlat = true;
-   #endif
+   normal.normalize();
 }
 
 void Triangle::Parse(Triangle &triangle) {
@@ -121,4 +112,18 @@ bool Triangle::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    hitShape = this;
 
    return true;
+}
+
+void Triangle::GetTransformedPts(Eigen::Vector3f *ta, Eigen::Vector3f *tb, Eigen::Vector3f *tc) {
+   Eigen::Vector4f newA = Eigen::Vector4f(a(0), a(1), a(2), 1);
+   Eigen::Vector4f newB = Eigen::Vector4f(b(0), b(1), b(2), 1);
+   Eigen::Vector4f newC = Eigen::Vector4f(c(0), c(1), c(2), 1);
+
+   newA = m0*newA;
+   newB = m0*newB;
+   newC = m0*newC;
+
+   *ta = newA.head<3>();
+   *tb = newA.head<3>();
+   *tc = newA.head<3>();
 }
