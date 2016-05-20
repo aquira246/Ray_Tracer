@@ -10,6 +10,7 @@
 #include "Camera.hpp"
 #include "Light.hpp"
 #include "Shape.hpp"
+#include "BVH.hpp"
 
 //Add shapes here as needed
 #include "Triangle.hpp"
@@ -30,6 +31,9 @@ class Scene
 		std::vector<Plane> planes;
         std::vector<Box> boxes;
         std::vector<Shape *> shapes;
+        std::vector<Box> boundingBoxes;
+
+        BVH bvh;
 
         int getShader();
         void setShader(int s);

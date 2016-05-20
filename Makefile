@@ -4,7 +4,7 @@ INC=-I$(EIGEN3_INCLUDE_DIR) -I./
 LIB=-DGL_GLEXT_PROTOTYPES -lglut -lGL -lGLU
 name=
 
-OBJECT = Box.o BRDF.o BVH.o Image.o LoadingBar.o main.o Parse.o Plane.o Ray.o Scene.o Sphere.o Shape.o Triangle.o VectorMath.o Finish.o Tokens.o Light.o Camera.o
+OBJECT = BoundingBox.o Box.o BRDF.o BVH.o Camera.o Finish.o Image.o Light.o LoadingBar.o main.o Parse.o Plane.o Ray.o Scene.o Sphere.o Shape.o Tokens.o Triangle.o VectorMath.o
 
 ifdef DEBUG
 	CFLAGS += -D DEBUG

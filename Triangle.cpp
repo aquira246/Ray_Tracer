@@ -115,15 +115,21 @@ bool Triangle::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
 }
 
 void Triangle::GetTransformedPts(Eigen::Vector3f *ta, Eigen::Vector3f *tb, Eigen::Vector3f *tc) {
-   Eigen::Vector4f newA = Eigen::Vector4f(a(0), a(1), a(2), 1);
-   Eigen::Vector4f newB = Eigen::Vector4f(b(0), b(1), b(2), 1);
-   Eigen::Vector4f newC = Eigen::Vector4f(c(0), c(1), c(2), 1);
+   if (transformed) {
+      Eigen::Vector4f newA = Eigen::Vector4f(a(0), a(1), a(2), 1);
+      Eigen::Vector4f newB = Eigen::Vector4f(b(0), b(1), b(2), 1);
+      Eigen::Vector4f newC = Eigen::Vector4f(c(0), c(1), c(2), 1);
 
-   newA = m0*newA;
-   newB = m0*newB;
-   newC = m0*newC;
+      newA = m0*newA;
+      newB = m0*newB;
+      newC = m0*newC;
 
-   *ta = newA.head<3>();
-   *tb = newA.head<3>();
-   *tc = newA.head<3>();
+      *ta = newA.head<3>();
+      *tb = newA.head<3>();
+      *tc = newA.head<3>();
+   } else {
+      *ta = a;
+      *tb = b;
+      *tc = c;
+   }
 }

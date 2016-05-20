@@ -72,6 +72,12 @@ void Shape::transformRay(const Ray &ray, Eigen::Vector3f *position, Eigen::Vecto
    
    *direction = (inverseM0*oldDir).head<3>();
    *position = (inverseM0*oldPos).head<3>();
+
+   #ifdef UNIT_TEST
+   Eigen::Vector3f p = *position;
+   Eigen::Vector3f d = *direction;
+   cout << "Transformed Ray: {" << p(0) << ", " << p(1) << ", " << p(2) << "} -> {" << d(0) << ", " << d(1) << ", " << d(2) << "}\n";
+   #endif
 }
 
 void Shape::transformNormal(const Eigen::Vector3f &hitNormal, Eigen::Vector3f *transformedNormal) {

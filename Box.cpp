@@ -14,13 +14,11 @@ void float_swap(float &a, float &b) {
 Box::Box() {
    corner1 = Eigen::Vector3f(-.5, -.5, -.5);
    corner2 = Eigen::Vector3f(.5, .5, .5);
-   isBounding = false;
 }
 
-Box::Box(Eigen::Vector3f c1, Eigen::Vector3f c2, bool bounding) {
+Box::Box(Eigen::Vector3f c1, Eigen::Vector3f c2) {
    corner1 = c1;
    corner2 = c2;
-   isBounding = bounding;
    transformed = false;
 
    xmin = corner1(0);
@@ -67,53 +65,47 @@ void Box::Parse(Box &box) {
 }
 
 void Box::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
-   if (!isBounding) {
-      Eigen::Vector3f eye, dir;
+   Eigen::Vector3f eye, dir;
 
-      if (transformed) {
-         transformRay(ray, &eye, &dir);
-      } else {
-         dir = ray.direction;
-         eye = ray.position;
-      }
+   if (transformed) {
+      transformRay(ray, &eye, &dir);
+   } else {
+      dir = ray.direction;
+      eye = ray.position;
+   }
 
-      // calculate normal
-      Eigen::Vector3f hitPt = eye + dir*t;
-      Eigen::Vector3f norm = Eigen::Vector3f(0,0,0);
+   // calculate normal
+   Eigen::Vector3f hitPt = eye + dir*t;
+   Eigen::Vector3f norm = Eigen::Vector3f(0,0,0);
 
-      if (hitPt(0) <= xmin + kEpsilon)
-         norm(0) = -1;
-      else if (hitPt(0) >= xmax - kEpsilon)
-         norm(0) = 1;
-      
-      else if (hitPt(1) <= ymin + kEpsilon)
-         norm(1) = -1;
-      else if (hitPt(1) >= ymax - kEpsilon)
-         norm(1) = 1;
-      
-      else if (hitPt(2) <= zmin + kEpsilon)
-         norm(2) = -1;
-      else if (hitPt(2) >= zmax - kEpsilon)
-         norm(2) = 1;
+   if (hitPt(0) <= xmin + kEpsilon)
+      norm(0) = -1;
+   else if (hitPt(0) >= xmax - kEpsilon)
+      norm(0) = 1;
+   
+   else if (hitPt(1) <= ymin + kEpsilon)
+      norm(1) = -1;
+   else if (hitPt(1) >= ymax - kEpsilon)
+      norm(1) = 1;
+   
+   else if (hitPt(2) <= zmin + kEpsilon)
+      norm(2) = -1;
+   else if (hitPt(2) >= zmax - kEpsilon)
+      norm(2) = 1;
 
-      norm.normalize();
+   norm.normalize();
 
-      //transform normal
-      if (transformed) {
-         // sets the hitnormal in the transformNormal function
-         transformNormal(norm, hitNormal);
-      } else {
-         *hitNormal = norm;
-      }
+   //transform normal
+   if (transformed) {
+      // sets the hitnormal in the transformNormal function
+      transformNormal(norm, hitNormal);
+   } else {
+      *hitNormal = norm;
    }
 }
 
 bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    t = -1;
-
-   // don't do any work when this is a bounding box with no contents
-   if (isBounding && contents.size() == 0)
-      return false;
 
    Eigen::Vector3f eye, dir;
 
@@ -177,32 +169,10 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    if (tmin < 0)
       return false;
 
-   // if we are a bounding box, we run the checks on that
-   if (isBounding) {
-      bool hit = false;
-      double checkingT = 0;
-      Eigen::Vector3f tempNormal;
-      Shape *testShape;
+   // calculate the hit info
+   t = tmin;
+   hitShape = this;
 
-      // check if we hit a shape
-      for (unsigned int i = 0; i < contents.size(); ++i)
-      {
-         if (contents[i]->CalculateHit(ray, checkingT, testShape)) {
-            if (checkingT > 0 && (checkingT < t || !hit)) {
-               t = checkingT;
-               hit = true;
-               hitShape = testShape;
-            }
-         }
-      }
-
-      return hit;
-   } else {
-      // otherwise calculate the hit info
-      t = tmin;
-      hitShape = this;
-
-      return true;
-   }
+   return true;
 }
 

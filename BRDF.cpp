@@ -48,9 +48,9 @@ Eigen::Vector3f BlinnPhong(const Shape *hitShape, const Eigen::Vector3f &n, cons
     
     Eigen::Vector3f ambient_color = hitShape->color.head<3>()*hitShape->finish.ambient;
 
-    // cout << "Ambient: " << "(" << ambient_color(0) << ", " << ambient_color(1) << ", " << ambient_color(2) << ")\n";
-    // cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
-    // cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
+    cout << "Ambient: " << "(" << ambient_color(0) << ", " << ambient_color(1) << ", " << ambient_color(2) << ")\n";
+    cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
+    cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
     #endif
 
     Eigen::Vector3f ret = hitShape->color.head<3>()*(dif + spec);

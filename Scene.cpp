@@ -1,5 +1,6 @@
 #include "Scene.hpp"
 #include "BRDF.hpp"
+#include "BVH.hpp"
 
 using namespace Eigen;
 using namespace std;
@@ -11,18 +12,18 @@ Scene::Scene() {
     lights.clear();
     triangles.clear();
     spheres.clear();
-   planes.clear();
-   boxes.clear();
-   BackgroundColor = Eigen::Vector3f(0,0,0);
-   shader = 0;
+    planes.clear();
+    boxes.clear();
+    BackgroundColor = Eigen::Vector3f(0,0,0);
+    shader = 0;
 }
 
 Scene::~Scene() {
     lights.clear();
     triangles.clear();
     spheres.clear();
-   planes.clear();
-   boxes.clear();
+    planes.clear();
+    boxes.clear();
 }
 
 int Scene::getShader() {
@@ -87,6 +88,14 @@ int Scene::Parse(FILE* infile, Scene &scene) {
       GetToken();
       ++numObjects;
    }
+
+   scene.bvh = BVH(scene.spheres, scene.triangles, scene.boxes);
+   scene.bvh.Init();
+
+   // for (unsigned int i = 0; i < scene.boundingBoxes.size(); ++i)
+   // {
+   //     scene.shapes.push_back(&scene.boundingBoxes[i]);
+   // }
 
    cout << "Triangles: " << scene.triangles.size() << endl;
    cout << "Spheres: " << scene.spheres.size() << endl;
@@ -317,8 +326,16 @@ bool Scene::CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Ve
         }
     }
 
-    if (hit)
+    if (hit) {
         hitShape->GetNormal(checkRay, &hitNormal, t);
+
+        #ifdef UNIT_TEST
+        Eigen::Vector3f hitPt = checkRay.position + checkRay.direction*t;
+        cout << "Hit Object t: " << t;
+        cout << "    Intersection point: {" << hitPt(0) << ", " << hitPt(1) << ", " << hitPt(2) << "}\n";
+        cout << "Normal: {" << hitNormal(0) << ", " << hitNormal(1) << ", " << hitNormal(2) << "}\n";
+        #endif
+    }
 
     return hit;
 }
