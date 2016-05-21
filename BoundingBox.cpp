@@ -63,9 +63,9 @@ bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&h
    // first we get rid of parallel lines that won't hit
    if(dir(0) == 0 && (eye(0) < mins(0) || eye(0) > maxs(0)))
       return false;
-   if(dir(1) == 1 && (eye(1) < mins(1) || eye(1) > maxs(0)))
+   if(dir(1) == 0 && (eye(1) < mins(1) || eye(1) > maxs(0)))
       return false;
-   if(dir(2) == 2 && (eye(2) < mins(2) || eye(2) > maxs(0)))
+   if(dir(2) == 0 && (eye(2) < mins(2) || eye(2) > maxs(0)))
       return false;
 
    // calculate the mins and max
