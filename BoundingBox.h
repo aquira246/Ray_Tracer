@@ -18,7 +18,7 @@ class BoundingBox
 {
     public:
         BoundingBox();
-        BoundingBox(Eigen::Vector3f c1, Eigen::Vector3f c2);
+        BoundingBox(Eigen::Vector3f c1, Eigen::Vector3f c2, Shape *c);
         ~BoundingBox();
 
         Shape *contents;

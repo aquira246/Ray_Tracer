@@ -31,7 +31,6 @@ class Scene
 		std::vector<Plane> planes;
         std::vector<Box> boxes;
         std::vector<Shape *> shapes;
-        std::vector<Box> boundingBoxes;
 
         BVH bvh;
 

@@ -151,6 +151,9 @@ int main(int argc, char **argv)
 
             // set the image pixel to be that color
             img->pixel(x, y, clr);
+            
+            // cout << "Ray Tracing: ";
+            // cout << y << ", " << x << "                    \r";
          }
 
          cout << "Ray Tracing: ";

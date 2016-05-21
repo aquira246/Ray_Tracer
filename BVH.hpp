@@ -13,9 +13,10 @@ public:
     ~BVH_Node();
 
     bool checkHit(const Ray &ray, double &t, double maxT, Shape *&hitShape);
+    bool checkShadowHit(const Ray &ray, double maxT);
     void split();
     
-    std::vector<BoundingBox *> contents;
+    std::vector<BoundingBox> BBoxes;
     std::vector<BVH_Node> children;
     BoundingBox myBounds;
 };
@@ -24,7 +25,7 @@ class BVH
 {
 public:
     BVH();
-    BVH(std::vector<Sphere> spheres, std::vector<Triangle> tris, std::vector<Box> boxes);
+    BVH(std::vector<Shape *> &shapes);
     ~BVH();
 
     void Init();
@@ -34,7 +35,7 @@ public:
     void AddShape(std::vector<Box> shapes);
 
     bool checkHit(const Ray &ray, double &t, Shape *&hitShape);
+    bool checkShadowHit(const Ray &ray, double maxT);
 
     BVH_Node root;
-    std::vector<BoundingBox> BBoxes;
 };

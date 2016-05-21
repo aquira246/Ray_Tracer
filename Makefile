@@ -23,7 +23,6 @@ ifdef PROFILE
 endif
 
 all: $(OBJECT)
-	touch main.cpp
 	$(CC) -g $(CFLAGS) $(INC) $(OBJECT) $(LIB) -o $(name)
 
 %.o: %.cpp

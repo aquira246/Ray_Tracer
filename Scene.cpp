@@ -89,13 +89,8 @@ int Scene::Parse(FILE* infile, Scene &scene) {
       ++numObjects;
    }
 
-   scene.bvh = BVH(scene.spheres, scene.triangles, scene.boxes);
+   scene.bvh = BVH(scene.shapes);
    scene.bvh.Init();
-
-   // for (unsigned int i = 0; i < scene.boundingBoxes.size(); ++i)
-   // {
-   //     scene.shapes.push_back(&scene.boundingBoxes[i]);
-   // }
 
    cout << "Triangles: " << scene.triangles.size() << endl;
    cout << "Spheres: " << scene.spheres.size() << endl;
@@ -295,10 +290,15 @@ bool Scene::ShadowHit(const Ray &checkRay, double lightDistance) {
     double checkingT = 0;
     Shape *shadowShape;
 
-    // check if we hit a shape
-    for (unsigned int i = 0; i < shapes.size(); ++i)
+    // check if our BVH hit
+    if (bvh.checkShadowHit(checkRay, lightDistance)) {
+            return true;
+    }
+
+    // check if we hit a plane
+    for (unsigned int i = 0; i < planes.size(); ++i)
     {
-        if ((*shapes[i]).CalculateHit(checkRay, checkingT, shadowShape)) {
+        if (planes[i].CalculateHit(checkRay, checkingT, shadowShape)) {
             if (checkingT > 0 && checkingT < lightDistance) {
                 return true;
             }
@@ -314,10 +314,17 @@ bool Scene::CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Ve
     t = -1;
     Shape *testShape;
 
-    // check if we hit a shape
-    for (unsigned int i = 0; i < shapes.size(); ++i)
+    // check if our BVH hit
+    if (bvh.checkHit(checkRay, checkingT, testShape)) {
+        t = checkingT;
+        hit = true;
+        hitShape = testShape;
+    }
+
+    // check if we hit a plane
+    for (unsigned int i = 0; i < planes.size(); ++i)
     {
-        if (shapes[i]->CalculateHit(checkRay, checkingT, testShape)) {
+        if (planes[i].CalculateHit(checkRay, checkingT, testShape)) {
             if (checkingT > 0 && (checkingT < t || !hit)) {
                 t = checkingT;
                 hit = true;

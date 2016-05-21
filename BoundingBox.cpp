@@ -16,15 +16,17 @@ void Float_Swap(float &a, float &b) {
 BoundingBox::BoundingBox() {
    mins = Eigen::Vector3f(-.5, -.5, -.5);
    maxs = Eigen::Vector3f(.5, .5, .5);
+   contents = NULL;
 }
 
-BoundingBox::BoundingBox(Eigen::Vector3f c1, Eigen::Vector3f c2) {
+BoundingBox::BoundingBox(Eigen::Vector3f c1, Eigen::Vector3f c2, Shape *c) {
    mins = c1;
    maxs = c2;
 
    if (mins(0) > maxs(0)) Float_Swap(mins(0), maxs(0));
    if (mins(1) > maxs(1)) Float_Swap(mins(1), maxs(1));
    if (mins(2) > maxs(2)) Float_Swap(mins(2), maxs(2));
+   contents = c;
 }
 
 BoundingBox::~BoundingBox(){
@@ -84,12 +86,12 @@ bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&h
 
    if (tmin > tmax) Float_Swap(tmin, tmax);
 
-   // don't care if the box is behind the ray or too far
-   if (tmin < 0 || tmin > maxT)
+   // don't care if the box is too far from the ray
+   if (tmin > maxT)
       return false;
 
    // don't do any more work when this is a bounding box with no contents
-   if (contents == NULL) {
+   if (!contents) {
       t = tmin;
       return true;
    }
@@ -119,8 +121,7 @@ BoundingBox EncaseTriangle(Triangle *toEncase) {
     maxPts(1) = max(max(a(1), b(1)), c(1));
     maxPts(2) = max(max(a(2), b(2)), c(2));
 
-    BoundingBox ret = BoundingBox(minPts, maxPts);
-    ret.contents = toEncase;
+    BoundingBox ret = BoundingBox(minPts, maxPts, toEncase);
     return ret;    
 }
 
@@ -157,8 +158,7 @@ BoundingBox EncaseSphere(Sphere *toEncase) {
         maxPts = center + Vector3f(rad, rad, rad);
     }
 
-    BoundingBox ret = BoundingBox(minPts, maxPts);
-    ret.contents = toEncase;
+    BoundingBox ret = BoundingBox(minPts, maxPts, toEncase);
     return ret;   
 }
 
@@ -195,7 +195,6 @@ BoundingBox EncaseBox(Box *toEncase) {
         maxPts = Vector3f(xmax, ymax, zmax);
     }
 
-    BoundingBox ret = BoundingBox(minPts, maxPts);
-    ret.contents = toEncase;
+    BoundingBox ret = BoundingBox(minPts, maxPts, toEncase);
     return ret; 
 }
