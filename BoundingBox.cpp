@@ -17,6 +17,8 @@ BoundingBox::BoundingBox() {
    mins = Eigen::Vector3f(-.5, -.5, -.5);
    maxs = Eigen::Vector3f(.5, .5, .5);
    contents = NULL;
+
+   minDistance = (maxs - mins).norm();
 }
 
 BoundingBox::BoundingBox(Eigen::Vector3f c1, Eigen::Vector3f c2, Shape *c) {
@@ -27,10 +29,30 @@ BoundingBox::BoundingBox(Eigen::Vector3f c1, Eigen::Vector3f c2, Shape *c) {
    if (mins(1) > maxs(1)) Float_Swap(mins(1), maxs(1));
    if (mins(2) > maxs(2)) Float_Swap(mins(2), maxs(2));
    contents = c;
+
+   minDistance = (maxs - mins).norm();
 }
 
 BoundingBox::~BoundingBox(){
 
+}
+
+Vector3f BoundingBox::getMins() {
+   return mins;
+}
+
+Vector3f BoundingBox::getMaxs() {
+   return maxs;
+}
+
+void BoundingBox::setMins(Eigen::Vector3f newMins) {
+   mins = newMins;
+   minDistance = (maxs - mins).norm();
+}
+
+void BoundingBox::setMaxs(Eigen::Vector3f newMaxs) {
+   maxs = newMaxs;
+   minDistance = (maxs - mins).norm();
 }
 
 bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&hitShape) {
@@ -87,7 +109,7 @@ bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&h
    if (tmin > tmax) Float_Swap(tmin, tmax);
 
    // don't care if the box is too far from the ray
-   if (tmin > maxT)
+   if (tmin > maxT || -minDistance > tmin)
       return false;
 
    // don't do any more work when this is a bounding box with no contents

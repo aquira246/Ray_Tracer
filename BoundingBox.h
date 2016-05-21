@@ -22,11 +22,17 @@ class BoundingBox
         ~BoundingBox();
 
         Shape *contents;
-        Eigen::Vector3f mins;
-        Eigen::Vector3f maxs;
+        double minDistance;
 
         bool CalculateHit(const Ray &ray, double &t, double maxT, Shape *&hitShape);
+
+        Eigen::Vector3f getMins();
+        Eigen::Vector3f getMaxs();
+        void setMins(Eigen::Vector3f newMins);
+        void setMaxs(Eigen::Vector3f newMaxs);
     private:
+        Eigen::Vector3f mins;
+        Eigen::Vector3f maxs;
 };
 
 BoundingBox EncaseTriangle(Triangle *toEncase);

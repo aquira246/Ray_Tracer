@@ -157,16 +157,16 @@ void BVH_Node::split() {
 
     if (size > 0)
     {
-        mins = BBoxes[0].mins;
-        maxs = BBoxes[0].maxs;
+        mins = BBoxes[0].getMins();
+        maxs = BBoxes[0].getMaxs();
 
         axisMaxs[0] = maxs;
     }
 
     for (unsigned int i = 1; i < size; ++i)
     {
-        Vector3f holdMin = BBoxes[i].mins;
-        Vector3f holdMax = BBoxes[i].maxs;
+        Vector3f holdMin = BBoxes[i].getMins();
+        Vector3f holdMax = BBoxes[i].getMaxs();
 
         for (int j = 0; j < 3; ++j)
         {
