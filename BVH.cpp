@@ -32,8 +32,15 @@ BVH::BVH(std::vector<Shape *> &shapes) {
 BVH::~BVH() {
 }
 
-void BVH::Init() {
-    root.split();
+void BVH::Init(int setup) {
+    if (setup == 0)
+        root.splitKD();
+    else if (setup == 1) {
+        cout << "WARNING! UNDER CONSTRUCTION!\n";
+        root.splitOct();
+    }
+    else
+        root.splitKD();
 }
 
 void BVH::AddShape(std::vector<Sphere> shapes) {
@@ -81,7 +88,7 @@ bool BVH::checkShadowHit(const Ray &ray, double maxT) {
 
 ///////////////////////////////////////////BVH_NODE TERRITORY///////////////////////////////////////////////////
 
-void BBoxSwap(BoundingBox &a, BoundingBox &b) {
+inline void BBoxSwap(BoundingBox &a, BoundingBox &b) {
     BoundingBox hold = a;
     a = b;
     b = hold;
@@ -191,7 +198,7 @@ bool BVH_Node::checkHit(const Ray &ray, double &t, double maxT, Shape *&hitShape
     return hit;
 }
 
-void BVH_Node::split() {
+void BVH_Node::splitKD() {
     // generate a list of mins and maxes, and bounding box coordinates
     unsigned int size = BBoxes.size();
     
@@ -236,13 +243,6 @@ void BVH_Node::split() {
             // cout << "Sorted by 2" << endl; 
         }
 
-        // check if the sort works
-        // for (unsigned int i = 0; i < BBoxes.size(); ++i)
-        // {
-        //     Vector3f hold = BBoxes[i].getMaxs();
-        //     cout << hold[0] << ", " << hold[1] << ", " << hold[2] << endl;
-        // }
-
         // make two children
         BVH_Node leftChild = BVH_Node();
         BVH_Node rightChild = BVH_Node();
@@ -258,11 +258,161 @@ void BVH_Node::split() {
         BBoxes.clear();
 
         // call split on children
-        leftChild.split();
-        rightChild.split();
+        leftChild.splitKD();
+        rightChild.splitKD();
 
         // put children in vector
         children.push_back(leftChild);
         children.push_back(rightChild);
+    }
+}
+
+void BVH_Node::splitOct() {
+    // generate a list of mins and maxes, and bounding box coordinates
+    unsigned int size = BBoxes.size();
+    
+    Vector3f mins = Vector3f(0,0,0);
+    Vector3f maxs = Vector3f(0,0,0);
+
+    if (size > 0)
+    {
+        mins = BBoxes[0].getMins();
+        maxs = BBoxes[0].getMaxs();
+    }
+
+    for (unsigned int i = 1; i < size; ++i)
+    {
+        Vector3f holdMin = BBoxes[i].getMins();
+        Vector3f holdMax = BBoxes[i].getMaxs();
+
+        for (int j = 0; j < 3; ++j)
+        {
+            mins(j) = min(mins(j), holdMin(j));
+            maxs(j) = max(maxs(j), holdMax(j));
+        }
+    }
+
+    // generate bounding box
+    myBounds = BoundingBox(mins, maxs, NULL);
+
+    // split contents into two groups if enough
+    if (size > 2) {
+        std::vector<BoundingBox> topFrontLeft, topFrontRight, topBackLeft, 
+                                topBackRight, botFrontLeft, botFrontRight, 
+                                botBackLeft, botBackRight, base;
+
+        Vector3f mid = (maxs - mins);
+        mid[0] = mid[0]/2 + mins[0];
+        mid[1] = mid[1]/2 + mins[1];
+        mid[2] = mid[2]/2 + mins[2];
+
+        for (unsigned int i = 1; i < size; ++i)
+        {
+            Vector3f holdMin = BBoxes[i].getMins();
+            Vector3f holdMax = BBoxes[i].getMaxs();
+            
+            // check if top or bottom
+            if (holdMin[1] <= mid[1] && holdMax[1] <= mid[1])
+                // check if front or back
+                if (holdMin[2] <= mid[2] && holdMax[2] <= mid[2])
+                    // check if we are on the left or right
+                    if (holdMin[0] <= mid[0] && holdMax[0] <= mid[0])
+                        botFrontLeft.push_back(BBoxes[i]);
+                    else if(holdMin[0] > mid[0] && holdMax[0] > mid[0])
+                        botFrontRight.push_back(BBoxes[i]);
+                    else
+                        base.push_back(BBoxes[i]);
+                else if(holdMin[2] > mid[2] && holdMax[2] > mid[2])
+                    // check if we are on the left or right
+                    if (holdMin[0] <= mid[0] && holdMax[0] <= mid[0])
+                        botBackLeft.push_back(BBoxes[i]);
+                    else if(holdMin[0] > mid[0] && holdMax[0] > mid[0])
+                        botBackRight.push_back(BBoxes[i]);
+                    else
+                        base.push_back(BBoxes[i]);
+                else
+                    base.push_back(BBoxes[i]);
+            else if(holdMin[1] > mid[1] && holdMax[1] > mid[1])
+                // check if front or back
+                if (holdMin[2] <= mid[2] && holdMax[2] <= mid[2])
+                    // check if we are on the left or right
+                    if (holdMin[0] <= mid[0] && holdMax[0] <= mid[0])
+                        topFrontLeft.push_back(BBoxes[i]);
+                    else if(holdMin[0] > mid[0] && holdMax[0] > mid[0])
+                        topFrontRight.push_back(BBoxes[i]);
+                    else
+                        base.push_back(BBoxes[i]);
+                else if(holdMin[2] > mid[2] && holdMax[2] > mid[2])
+                    // check if we are on the left or right
+                    if (holdMin[0] <= mid[0] && holdMax[0] <= mid[0])
+                        topBackLeft.push_back(BBoxes[i]);
+                    else if(holdMin[0] > mid[0] && holdMax[0] > mid[0])
+                        topBackRight.push_back(BBoxes[i]);
+                    else
+                        base.push_back(BBoxes[i]);
+                else
+                    base.push_back(BBoxes[i]);
+            else
+                base.push_back(BBoxes[i]);
+        }
+
+        BBoxes.clear();
+        BBoxes = base;
+
+        if (botFrontLeft.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = botFrontLeft;
+            child.splitOct();
+            children.push_back(child);
+        }
+
+        if (botFrontRight.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = botFrontRight;
+            child.splitOct();
+            children.push_back(child);
+        }
+
+        if (botBackLeft.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = botBackLeft;
+            child.splitOct();
+            children.push_back(child);
+        }
+
+        if (botBackRight.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = botBackRight;
+            child.splitOct();
+            children.push_back(child);
+        }
+
+        if (topFrontLeft.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = topFrontLeft;
+            child.splitOct();
+            children.push_back(child);
+        }
+
+        if (topFrontRight.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = topFrontRight;
+            child.splitOct();
+            children.push_back(child);
+        }
+
+        if (topBackLeft.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = topBackLeft;
+            child.splitOct();
+            children.push_back(child);
+        }
+
+        if (topBackRight.size() > 0) {
+            BVH_Node child = BVH_Node();
+            child.BBoxes  = topBackRight;
+            child.splitOct();
+            children.push_back(child);
+        }
     }
 }

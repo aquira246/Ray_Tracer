@@ -166,11 +166,11 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    if (tmin > tmax) float_swap(tmin, tmax);
 
    // don't care if the box is behind the ray
-   if (tmin < 0)
+   if (tmin < 0 && tmax < 0)
       return false;
 
    // calculate the hit info
-   t = tmin;
+   t = tmin < 0 ? tmax : tmin;
    hitShape = this;
 
    return true;

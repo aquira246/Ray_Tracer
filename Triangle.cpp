@@ -110,7 +110,7 @@ bool Triangle::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    t = ac.dot(qvec)*inverseDet;
 
    hitShape = this;
-
+   
    return true;
 }
 

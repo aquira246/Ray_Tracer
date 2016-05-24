@@ -21,7 +21,7 @@ int width = 640;
 int height = 480;
 int shader = 0;
 Scene scene;
-bool useAA = false;
+bool useAA = true;
 
 int main(int argc, char **argv)
 {
@@ -57,16 +57,14 @@ int main(int argc, char **argv)
       width = stoi(argv[1]);
       height = stoi(argv[2]);
       fileName = argv[3];
-      if (stoi(argv[4]) == 0)
-         useAA = false;
+      shader = stoi(argv[4]);
    } else {
       width = stoi(argv[1]);
       height = stoi(argv[2]);
       fileName = argv[3];
-      if (stoi(argv[4]) == 0)
+      shader = stoi(argv[4]);
+      if (stoi(argv[5]) == 0)
          useAA = false;
-
-      shader = stoi(argv[5]);
    }
 
    infile = fopen(fileName, "r");

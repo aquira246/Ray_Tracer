@@ -15,10 +15,10 @@ Anti-Aliasing = 0 is off, anything else is on
 
 How to run:
     Use this to create an image called sample.tga of the pov ray file
-    rt <width> <height> <input_scene.pov> <Anti-Aliasing> <BRDF>
+    rt <width> <height> <input_scene.pov> <BRDF> <Anti-Aliasing>
 
-    Use this to toggle Anti-Aliasing and use the default blinn-phong shading
-    rt <width> <height> <input_scene.pov> <Anti-Aliasing>
+    Use this to toggle BRDF and use Anti-Aliasing
+    rt <width> <height> <input_scene.pov> <BRDF>
 
     Using this will run the ray tracer with Blinn-Phong automatically picked
     rt <width> <height> <input_scene.pov>
@@ -37,6 +37,7 @@ Current Status:
     Anti-Aliasing: working
     Box intersections: Working
     multiple lights: working
+    BVH: Working
     General sanity: hahahahahahahahahhahahahahahahhhhahaaaahahahahhahahaAHHAHAhAHhahAAHahahAHHAsdkfhaosjhfbwkjegfuakhsbfuekhs
 
 Parsing: what is missing

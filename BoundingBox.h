@@ -22,7 +22,6 @@ class BoundingBox
         ~BoundingBox();
 
         Shape *contents;
-        double minDistance;
 
         bool CalculateHit(const Ray &ray, double &t, double maxT, Shape *&hitShape);
 
@@ -30,6 +29,7 @@ class BoundingBox
         Eigen::Vector3f getMaxs();
         void setMins(Eigen::Vector3f newMins);
         void setMaxs(Eigen::Vector3f newMaxs);
+
     private:
         Eigen::Vector3f mins;
         Eigen::Vector3f maxs;

@@ -14,7 +14,8 @@ public:
 
     bool checkHit(const Ray &ray, double &t, double maxT, Shape *&hitShape);
     bool checkShadowHit(const Ray &ray, double maxT);
-    void split();
+    void splitKD();
+    void splitOct();
     
     std::vector<BoundingBox> BBoxes;
     std::vector<BVH_Node> children;
@@ -28,7 +29,9 @@ public:
     BVH(std::vector<Shape *> &shapes);
     ~BVH();
 
-    void Init();
+    // 0 is normal BVH that splits in half multiple times
+    // defaults to 0 if too big
+    void Init(int setup);
 
     void AddShape(std::vector<Sphere> shapes);
     void AddShape(std::vector<Triangle> shapes);

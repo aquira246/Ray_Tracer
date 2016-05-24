@@ -90,7 +90,7 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    }
 
    scene.bvh = BVH(scene.shapes);
-   scene.bvh.Init();
+   scene.bvh.Init(0);
 
    cout << "Triangles: " << scene.triangles.size() << endl;
    cout << "Spheres: " << scene.spheres.size() << endl;
