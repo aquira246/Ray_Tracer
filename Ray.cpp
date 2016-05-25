@@ -5,6 +5,7 @@
 #include "Ray.hpp"
 
 #define EPSILON .001
+#define PI 3.1415
 
 using namespace std;
 
@@ -103,4 +104,32 @@ Ray ComputeRefractedRay(const Eigen::Vector3f &hitPt, const Eigen::Vector3f &sur
 
    // epsilon shift the starting point
    return Ray(hitPt + refracted*EPSILON, refracted);
+}
+
+Eigen::Vector3f CosineSampleHemisphere()
+{
+   float u1 = RandomFloat(0, 1);
+   float u2 = RandomFloat(0, 1);
+
+   const float r = sqrt(u1);
+   const float theta = 2 * PI * u2;
+
+   const float x = r * cos(theta);
+   const float y = r * sin(theta);
+
+   return Eigen::Vector3f(x, y, sqrt(max(0.0f, 1 - u1)));
+}
+
+// u1 and u2 must be positive!!!
+Eigen::Vector3f CosineSampleHemisphere(float u1, float u2)
+{
+   // u1 = fabs(u1);
+   // u2 = fabs(u2);
+   const float r = sqrt(u1);
+   const float theta = 2 * PI * u2;
+
+   const float x = r * cos(theta);
+   const float y = r * sin(theta);
+
+   return Eigen::Vector3f(x, y, sqrt(max(0.0f, 1 - u1)));
 }

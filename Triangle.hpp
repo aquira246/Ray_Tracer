@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <iostream> 
 
-#include "VectorMath.hpp"
 #include "Shape.hpp"
 #include "Ray.hpp"
 
