@@ -125,8 +125,8 @@ void Triangle::GetTransformedPts(Eigen::Vector3f *ta, Eigen::Vector3f *tb, Eigen
       newC = m0*newC;
 
       *ta = newA.head<3>();
-      *tb = newA.head<3>();
-      *tc = newA.head<3>();
+      *tb = newB.head<3>();
+      *tc = newC.head<3>();
    } else {
       *ta = a;
       *tb = b;
