@@ -41,7 +41,14 @@ How to run:
 Use "make clean" to remove all of the executables and object files
 
 Current Status:
-    Global Illumination with Monte Carlo: broken
+    Global Illumination with Monte Carlo: Working, although it is noisy. And takes SOOOOOOOOOOOOOO long.
+    Accelerated using a BVH. An Oct-Tree is under construction for fun though I doubt it will be finished.
+    Transforms: Working
+    Working shapes: Boxes, Spheres, Triangles, and Planes
+    Reflections: Working
+    Refractions: Working and using Schlick's Approximation. Beer's law is commented out at the moment
+    Shadows: Working, currently hard shadows only
+    BRDFS: Blinn-Phong, Cook-Torrence, and an experimental toon shading
     General sanity: hahahahahahahahahhahahahahahahhhhahaaaahahahahhahahaAHHAHAhAHhahAAHahahAHHAsdkfhaosjhfbwkjegfuakhsbfuekhs
 
 Parsing: what is missing
@@ -49,3 +56,9 @@ Parsing: what is missing
         
 Non-working shapes:
         Cones
+
+Extra things to do later:
+    Finish Oct-Tree
+    Finish Toon-Shading
+    Textures
+    Soft Shadows with Monte-Carlo
