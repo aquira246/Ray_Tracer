@@ -17,6 +17,7 @@
 using namespace std;
 
 const int MAX_REFLECTIONS = 5;
+int GI_BOUNCES = 0;
 int width = 640;
 int height = 480;
 int shader = 0;
@@ -25,6 +26,9 @@ bool useAA = true;
 
 int main(int argc, char **argv)
 {
+   /* initialize random seed: */
+   srand (time(NULL));
+   
    #ifdef UNIT_TEST
    
    // Run the Unit Tests
@@ -35,12 +39,13 @@ int main(int argc, char **argv)
    char *fileName;
    scene = Scene();
  
-   if(argc < 2 || argc > 6) {
+   if(argc < 2 || argc > 7) {
       cout << "Usage: rt <input_scene.pov>   | default AA is on, 640 by 480 with Blinn-Phong Shading" << endl;
       cout << "Usage: rt <input_scene.pov> <shader>  | default AA is on, 640 by 480, and Blinn-Phong" << endl;
       cout << "Usage: rt <width> <height> <input_scene.pov>   | default AA is on, Blinn-Phong Shading" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov> <AntiAliasing>   | default Blinn-Phong Shading" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov> <AntiAliasing> <shader>" << endl;
+      cout << "Usage: rt <width> <height> <input_scene.pov> <shader>   | default Blinn-Phong Shading" << endl;
+      cout << "Usage: rt <width> <height> <input_scene.pov> <shader> <AntiAliasing> | default no global illumination" << endl;
+      cout << "Usage: rt <width> <height> <input_scene.pov> <shader> <AntiAliasing> <GlobalIllumination>" << endl;
       exit(EXIT_FAILURE);
    }
 
@@ -58,6 +63,13 @@ int main(int argc, char **argv)
       height = stoi(argv[2]);
       fileName = argv[3];
       shader = stoi(argv[4]);
+   } else if (argc == 6) {
+      width = stoi(argv[1]);
+      height = stoi(argv[2]);
+      fileName = argv[3];
+      shader = stoi(argv[4]);
+      if (stoi(argv[5]) == 0)
+         useAA = false;
    } else {
       width = stoi(argv[1]);
       height = stoi(argv[2]);
@@ -65,6 +77,9 @@ int main(int argc, char **argv)
       shader = stoi(argv[4]);
       if (stoi(argv[5]) == 0)
          useAA = false;
+      GI_BOUNCES = stoi(argv[6]);
+      if (GI_BOUNCES > 3)
+         GI_BOUNCES = 3;
    }
 
    infile = fopen(fileName, "r");
@@ -86,9 +101,11 @@ int main(int argc, char **argv)
    if(infile) {
       cout << "Width: " << width << "   Height: " << height << "   Shader: " << shaderName << "   AA: ";
       if (useAA)
-         cout << "on" << endl;
+         cout << "on";
       else
-         cout << "off" << endl;
+         cout << "off";
+      
+      cout << "   GlobalIllumination: " << GI_BOUNCES << endl;
       cout << Scene::Parse(infile, scene) << " objects parsed from scene file" << endl;
    } else {
       perror("fopen");
@@ -129,7 +146,7 @@ int main(int argc, char **argv)
             for (unsigned int i = 0; i < laserbeams.size(); ++i)
             {
                // get the color that the ray provides
-               clr += scene.ShootRayIntoScene(laserbeams[i], t, 1, 1, MAX_REFLECTIONS);
+               clr += scene.ShootRayIntoScene(laserbeams[i], t, 1, 1, MAX_REFLECTIONS, GI_BOUNCES);
             }
 
             clr /= (float)laserbeams.size();

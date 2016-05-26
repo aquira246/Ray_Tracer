@@ -18,6 +18,9 @@
 #include "Plane.hpp"
 #include "Box.hpp"
 
+#define GI_SAMPLE_SIZE 128
+#define GI_SMALL_SAMPLE_SIZE 64
+
 class Scene
 {
 	public:
@@ -37,7 +40,7 @@ class Scene
         int getShader();
         void setShader(int s);
 
-		Eigen::Vector3f ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft);
+		Eigen::Vector3f ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft, int GIBounces);
         bool CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Vector3f &hitNormal);   // in public for testing reasons
         bool ShadowHit(const Ray &checkRay, double lightDistance);
 

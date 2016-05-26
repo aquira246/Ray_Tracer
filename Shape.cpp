@@ -22,7 +22,9 @@ void Shape::ParseModifiers(Shape &shape) {
    while(1) { 
       GetToken();
       if (Token.id == T_SCALE) {
-         ParseVector(vector);
+        // check to see if "<" or not. If so parse vector. otherwise parse double
+         // ParseVector(vector);
+         ParseScaleOrVector(vector);
          Eigen::Matrix4f scaleMat;
          if (shape.GetShape() != PLANE_ID && vector[0] != 0 && vector[1] != 0 && vector[2] != 0){
              scaleMat << vector[0], 0,         0,         0,

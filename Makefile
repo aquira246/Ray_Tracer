@@ -44,5 +44,10 @@ good:
 	./raytrace 640 480 resources/simp_cam.pov
 good2:
 	./raytrace 640 480 resources/simp_cam2.pov
+
+cornell:
+	./raytrace 640 480 resources/RScornell.pov 0 0 2
+cornellAA:
+	./raytrace 640 480 resources/RScornell.pov 0 1 2
 clean:
 	rm -f *~ *.o a.out raytrace raytrace_test gmon.out resources/gprof*

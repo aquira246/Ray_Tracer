@@ -74,6 +74,24 @@ void ParseVector(Vector3f &v) {
    ParseRightAngle();
 }
 
+void ParseScaleOrVector(Vector3f &v) { 
+   GetToken();
+   if (Token.id == T_LEFT_ANGLE) {
+      v[0] = ParseDouble();
+      ParseComma();
+      v[1] = ParseDouble();
+      ParseComma();
+      v[2] = ParseDouble();
+      ParseRightAngle();
+   } else if(Token.id == T_DOUBLE ) {
+      v[0] = v[1] = v[2] = Token.double_value;
+   } else {
+      string msg;
+      msg = "Expected either Double or '<'   Found " + TokenToString(Token.id);
+      Error(msg);
+   }
+}
+
 void ParseRGBFColor(Eigen::Vector4f &c) {
   ParseLeftAngle();
   c[0] = ParseDouble();

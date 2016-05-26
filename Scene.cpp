@@ -102,7 +102,8 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    return numObjects;
 }
 
-Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft) {
+// DOES NOT HAVE GLOBAL ILLUMINATION BEYOND BASE COLOR!!!!!!
+Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft, int GIBounces) {
     // const hitShape
     Shape *hitShape = NULL;
     Eigen::Vector3f hitNormal;
@@ -135,9 +136,36 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
 
         // set the color to ambient
         Eigen::Vector3f baseColor = hitShape->color.head<3>();
-        Eigen::Vector3f retColor = baseColor*hitShape->finish.ambient;
-        Eigen::Vector3f specCol;
-        specCol << 0, 0, 0;
+        Eigen::Vector3f retColor;
+
+        // if we can go deeper into global illumination and we are not doing refraction (which ignores this anyway)
+        if (GIBounces > 0 && hitShape->color[3] == 0) {
+            // set the color to 0
+            retColor = Eigen::Vector3f(0,0,0);
+
+            // setup the initial GIray
+            Ray giRay = Ray(hitPt, Vector3f(0,0,0));
+
+            // calculate the number of samples we are taking. On the second layer cut the samples in half
+            int sample_size = GIBounces > 1 ? GI_SAMPLE_SIZE : GI_SMALL_SAMPLE_SIZE;
+
+            double holdt = 0;
+
+            // for each sample, we shoot out a ray to calculate the color and add it to retColor
+            for (int i = 0; i < sample_size; ++i)
+            {
+                giRay.direction = ComputeGIRay(hitNormal);
+                retColor += ShootRayIntoScene(giRay, holdt, prevIOR, curIOR, bouncesLeft, GIBounces - 1);
+            }
+
+            // divide retColor by the sample size to average it
+            retColor /= sample_size;
+        } else {
+            // otherwise we get ambient as normal
+            retColor = baseColor*hitShape->finish.ambient;
+        }
+
+        Eigen::Vector3f specCol = Eigen::Vector3f(0,0,0);
 
         //check to see if the hit object is in shadow for each light
         for (unsigned int i = 0; i < lights.size(); ++i)
@@ -218,7 +246,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                     R = R0 + (1.0 - R0)*pow(1.0 - cosX, 5.0);
 
                     // calculate refraction color
-                    refractColor = ShootRayIntoScene(refrRay, refractT, oldIOR, newIOR, bouncesLeft - 1);
+                    refractColor = ShootRayIntoScene(refrRay, refractT, oldIOR, newIOR, bouncesLeft - 1, 0);
                 } else {
                     R = 1;
                     reflectVal += refractVal;
@@ -229,7 +257,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 }
 
                 Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
-                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1);
+                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, 0);
 
                 /* beers law */
                 // if (!isInside) {
@@ -264,7 +292,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 cout << reflRay.direction[0] << ", " << reflRay.direction[1] << ", " << reflRay.direction[2] << "}\n";
                 #endif
 
-                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1);
+                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, 0);
                 retColor = retColor*(1 - reflectVal) + reflectVal*reflectColor;
 
             }

@@ -1,6 +1,6 @@
 Ray Tracer program by Andrew Acosta
 
-PART 4
+PART 5
 
 How to make:
 to make the program, just type "make". This should result in a lot of object files and the raytrace executable
@@ -12,9 +12,18 @@ BRDFs to choose from:
 2 = An attempt at toon-shading. Still under construction. 
 
 Anti-Aliasing = 0 is off, anything else is on
+GlobalIllumination = 0 is off, 2 or 3 is the number of levels of recursion. It has a cap at 3.
+
+Default values:
+<width> 640
+<height> 480
+<BRDF> Blinn-Phong
+<Anti-Aliasing> on
+<Global Illumination> off
 
 How to run:
     Use this to create an image called sample.tga of the pov ray file
+    rt <width> <height> <input_scene.pov> <BRDF> <Anti-Aliasing> <Global Illumination>
     rt <width> <height> <input_scene.pov> <BRDF> <Anti-Aliasing>
 
     Use this to toggle BRDF and use Anti-Aliasing
@@ -32,12 +41,7 @@ How to run:
 Use "make clean" to remove all of the executables and object files
 
 Current Status:
-    Schlick's refractin: working (though no beers law)
-    Geometric Transforms: working
-    Anti-Aliasing: working
-    Box intersections: Working
-    multiple lights: working
-    BVH: Working
+    Global Illumination with Monte Carlo: broken
     General sanity: hahahahahahahahahhahahahahahahhhhahaaaahahahahhahahaAHHAHAhAHhahAAHahahAHHAsdkfhaosjhfbwkjegfuakhsbfuekhs
 
 Parsing: what is missing

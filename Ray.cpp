@@ -4,15 +4,12 @@
 #include <iostream>
 #include "Ray.hpp"
 
+using namespace std;
+
 #define EPSILON .001
 #define PI 3.1415
 
-using namespace std;
-
 float RandomFloat(float a, float b) {
-   /* initialize random seed: */
-   srand (time(NULL));
-   
    float random = ((float) rand()) / (float) RAND_MAX;
    float diff = b - a;
    float r = random * diff;
@@ -106,6 +103,7 @@ Ray ComputeRefractedRay(const Eigen::Vector3f &hitPt, const Eigen::Vector3f &sur
    return Ray(hitPt + refracted*EPSILON, refracted);
 }
 
+// http://www.rorydriscoll.com/2009/01/07/better-sampling/
 Eigen::Vector3f CosineSampleHemisphere()
 {
    float u1 = RandomFloat(0, 1);
@@ -131,5 +129,35 @@ Eigen::Vector3f CosineSampleHemisphere(float u1, float u2)
    const float x = r * cos(theta);
    const float y = r * sin(theta);
 
-   return Eigen::Vector3f(x, y, sqrt(max(0.0f, 1 - u1)));
+   return Eigen::Vector3f(x, y, sqrt(max(0.0f, 1 - x*x - y*y)));
+}
+
+Eigen::Vector3f ComputeGIRay(const Eigen::Vector3f &N) {
+   Eigen::Vector3f Z = Eigen::Vector3f(0, 0, 1);
+   float angle = N.dot(Z);
+   if (angle < 0) {
+      Z = -Z;
+      angle = N.dot(-Z);
+   }
+
+   Eigen::Vector3f axis = N.cross(Z);
+
+   // check if axis is 0?
+   if (axis.norm() < .0001) {
+      // cout << "HEY! THE AXIS OF ROTATION IS WRONG" << endl;
+      Z = Eigen::Vector3f(0, 1, 0);
+      angle = N.dot(Z);
+      if (angle < 0) {
+         Z = -Z;
+         angle = N.dot(-Z);
+      }
+
+      axis = N.cross(Z);
+   }
+
+   Matrix3f rot;
+   rot = Eigen::AngleAxisf(angle, axis);
+   Eigen::Vector3f ret = CosineSampleHemisphere();
+   ret = rot*ret;
+   return ret;
 }

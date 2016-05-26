@@ -25,6 +25,7 @@ void ParseLeftCurly();
 void ParseRightCurly();
 void ParseComma();
 void ParseVector(Vector3f &v);
+void ParseScaleOrVector(Vector3f &v);
 void ParseRGBFColor(Eigen::Vector4f &c);
 void ParseRGBColor(Eigen::Vector4f &c);
 void ParseColor(Eigen::Vector4f &c);
