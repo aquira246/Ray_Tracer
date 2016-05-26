@@ -257,7 +257,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 }
 
                 Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
-                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, GIBounces - 1);
+                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, 0);
 
                 /* beers law */
                 // if (!isInside) {
@@ -292,7 +292,7 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
                 cout << reflRay.direction[0] << ", " << reflRay.direction[1] << ", " << reflRay.direction[2] << "}\n";
                 #endif
 
-                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, GIBounces - 1);
+                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, 0);
                 retColor = retColor*(1 - reflectVal) + reflectVal*reflectColor;
 
             }
