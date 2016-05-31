@@ -83,10 +83,7 @@ void Shape::transformRay(const Ray &ray, Eigen::Vector3f *position, Eigen::Vecto
 }
 
 void Shape::transformNormal(const Eigen::Vector3f &hitNormal, Eigen::Vector3f *transformedNormal) {
-   Eigen::Vector4f transNormal (hitNormal[0], hitNormal[1], hitNormal[2], 0);
-
-   Eigen::Vector4f hold = inverseTransposeM0*transNormal;
-   
+   Eigen::Vector4f hold = inverseTransposeM0*Eigen::Vector4f(hitNormal[0], hitNormal[1], hitNormal[2], 0);
    *transformedNormal = (hold.head<3>()).normalized();
 }
 

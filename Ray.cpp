@@ -9,6 +9,8 @@ using namespace std;
 #define EPSILON .001
 #define PI 3.1415
 
+const float TWO_PI = 2*PI;
+
 float RandomFloat(float a, float b) {
    float random = ((float) rand()) / (float) RAND_MAX;
    float diff = b - a;
@@ -103,29 +105,10 @@ Ray ComputeRefractedRay(const Eigen::Vector3f &hitPt, const Eigen::Vector3f &sur
    return Ray(hitPt + refracted*EPSILON, refracted);
 }
 
-// http://www.rorydriscoll.com/2009/01/07/better-sampling/
-Eigen::Vector3f CosineSampleHemisphere()
+inline Eigen::Vector3f CosineSampleHemisphere()
 {
-   float u1 = RandomFloat(0, 1);
-   float u2 = RandomFloat(0, 1);
-
-   const float r = sqrt(u1);
-   const float theta = 2 * PI * u2;
-
-   const float x = r * cos(theta);
-   const float y = r * sin(theta);
-
-   return Eigen::Vector3f(x, y, sqrt(max(0.0f, 1 - u1)));
-}
-
-// u1 and u2 must be positive!!!
-Eigen::Vector3f CosineSampleHemisphere(float u1, float u2)
-{
-   // u1 = fabs(u1);
-   // u2 = fabs(u2);
-   const float r = sqrt(u1);
-   const float theta = 2 * PI * u2;
-
+   const float theta = RandomFloat(0, TWO_PI);
+   const float r = sqrt(RandomFloat(0, 1));
    const float x = r * cos(theta);
    const float y = r * sin(theta);
 
@@ -134,30 +117,31 @@ Eigen::Vector3f CosineSampleHemisphere(float u1, float u2)
 
 Eigen::Vector3f ComputeGIRay(const Eigen::Vector3f &N) {
    Eigen::Vector3f Z = Eigen::Vector3f(0, 0, 1);
-   float angle = N.dot(Z);
-   if (angle < 0) {
+   float cosangle = N.dot(Z);
+   if (cosangle < 0) {
       Z = -Z;
-      angle = N.dot(-Z);
+      cosangle = N.dot(-Z);
    }
 
-   Eigen::Vector3f axis = N.cross(Z);
+   Eigen::Vector3f axis = (N.cross(Z)).normalized();
 
    // check if axis is 0?
-   if (axis.norm() < .0001) {
-      // cout << "HEY! THE AXIS OF ROTATION IS WRONG" << endl;
-      Z = Eigen::Vector3f(0, 1, 0);
-      angle = N.dot(Z);
-      if (angle < 0) {
-         Z = -Z;
-         angle = N.dot(-Z);
-      }
+   // if (axis.norm() < .0001) {
+   //    // cout << "HEY! THE AXIS OF ROTATION IS WRONG" << endl;
+   //    Z = Eigen::Vector3f(0, 1, 0);
+   //    cosangle = N.dot(Z);
+   //    if (cosangle < 0) {
+   //       Z = -Z;
+   //       cosangle = N.dot(-Z);
+   //    }
 
-      axis = N.cross(Z);
-   }
+   //    axis = N.cross(Z);
+   // }
 
    Matrix3f rot;
-   rot = Eigen::AngleAxisf(angle, axis);
+   rot = Eigen::AngleAxisf(acos(cosangle), axis);
    Eigen::Vector3f ret = CosineSampleHemisphere();
    ret = rot*ret;
+
    return ret;
 }

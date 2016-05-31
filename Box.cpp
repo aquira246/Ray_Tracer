@@ -4,13 +4,6 @@
 
 using namespace std;
 
-// switch a and b (wanted to use xors but meh)
-void float_swap(float &a, float &b) {
-   float hold = a;
-   a = b;
-   b = hold;
-}
-
 Box::Box() {
    corner1 = Eigen::Vector3f(-.5, -.5, -.5);
    corner2 = Eigen::Vector3f(.5, .5, .5);
@@ -30,13 +23,46 @@ Box::Box(Eigen::Vector3f c1, Eigen::Vector3f c2) {
    zmin = corner1(2);
    zmax = corner2(2);
 
-   if (xmin > xmax) float_swap(xmin, xmax);
-   if (ymin > ymax) float_swap(ymin, ymax);
-   if (zmin > zmax) float_swap(zmin, zmax);
+   if (xmin > xmax) swap(xmin, xmax);
+   if (ymin > ymax) swap(ymin, ymax);
+   if (zmin > zmax) swap(zmin, zmax);
 }
 
 Box::~Box(){
 
+}
+
+void Box::Init() {
+   xmin = corner1(0);
+   xmax = corner2(0);
+
+   ymin = corner1(1);
+   ymax = corner2(1);
+
+   zmin = corner1(2);
+   zmax = corner2(2);
+
+   if (xmin > xmax) swap(xmin, xmax);
+   if (ymin > ymax) swap(ymin, ymax);
+   if (zmin > zmax) swap(zmin, zmax);
+
+   //transform normals if appropriate
+   if (transformed) {
+      transformNormal(Eigen::Vector3f(-1, 0, 0), &leftNormal);
+      transformNormal(Eigen::Vector3f(1, 0, 0), &rightNormal);
+      transformNormal(Eigen::Vector3f(0, -1, 0), &botNormal);
+      transformNormal(Eigen::Vector3f(0, 1, 0), &topNormal);
+      transformNormal(Eigen::Vector3f(0, 0, -1), &backNormal);
+      transformNormal(Eigen::Vector3f(0, 0, 1), &frontNormal);
+   }
+   else {
+      leftNormal = Eigen::Vector3f(-1, 0, 0);
+      rightNormal = Eigen::Vector3f(1, 0, 0);
+      botNormal = Eigen::Vector3f(0, -1, 0);
+      topNormal = Eigen::Vector3f(0, 1, 0);
+      backNormal = Eigen::Vector3f(0, 0, -1);
+      frontNormal = Eigen::Vector3f(0, 0, 1);
+   }
 }
 
 void Box::Parse(Box &box) {
@@ -50,18 +76,7 @@ void Box::Parse(Box &box) {
    Shape::ParseModifiers(box);
    ParseRightCurly();
 
-   box.xmin = box.corner1(0);
-   box.xmax = box.corner2(0);
-
-   box.ymin = box.corner1(1);
-   box.ymax = box.corner2(1);
-
-   box.zmin = box.corner1(2);
-   box.zmax = box.corner2(2);
-
-   if (box.xmin > box.xmax) float_swap(box.xmin, box.xmax);
-   if (box.ymin > box.ymax) float_swap(box.ymin, box.ymax);
-   if (box.zmin > box.zmax) float_swap(box.zmin, box.zmax);
+   box.Init();
 }
 
 void Box::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
@@ -76,32 +91,24 @@ void Box::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
 
    // calculate normal
    Eigen::Vector3f hitPt = eye + dir*t;
-   Eigen::Vector3f norm = Eigen::Vector3f(0,0,0);
 
    if (hitPt(0) <= xmin + kEpsilon)
-      norm(0) = -1;
+      *hitNormal = leftNormal;
    else if (hitPt(0) >= xmax - kEpsilon)
-      norm(0) = 1;
+      *hitNormal =  rightNormal;
    
    else if (hitPt(1) <= ymin + kEpsilon)
-      norm(1) = -1;
+      *hitNormal =  botNormal;
    else if (hitPt(1) >= ymax - kEpsilon)
-      norm(1) = 1;
+      *hitNormal =  topNormal;
    
    else if (hitPt(2) <= zmin + kEpsilon)
-      norm(2) = -1;
+      *hitNormal = backNormal;
    else if (hitPt(2) >= zmax - kEpsilon)
-      norm(2) = 1;
-
-   norm.normalize();
-
-   //transform normal
-   if (transformed) {
-      // sets the hitnormal in the transformNormal function
-      transformNormal(norm, hitNormal);
-   } else {
-      *hitNormal = norm;
-   }
+      *hitNormal = frontNormal;
+   else
+      // throw exception
+      cout << "ERROR GETTING BOX NORMAL!" << endl;
 }
 
 bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
@@ -129,7 +136,7 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    float txmin = (corner1(0) - eye(0)) / dir(0);
    float txmax = (corner2(0) - eye(0)) / dir(0);
 
-   if (txmin > txmax) float_swap(txmin, txmax);
+   if (txmin > txmax) swap(txmin, txmax);
 
    float tmin = txmin;
    float tmax = txmax;
@@ -137,7 +144,7 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    float tymin = (corner1(1) - eye(1)) / dir(1);
    float tymax = (corner2(1) - eye(1)) / dir(1);
 
-   if (tymin > tymax) float_swap(tymin, tymax);
+   if (tymin > tymax) swap(tymin, tymax);
 
    // cut out early if there is for sure no hit
    if ((tmin > tymax) || (tymin > tmax))
@@ -152,7 +159,7 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    float tzmin = (corner1(2) - eye(2)) / dir(2);
    float tzmax = (corner2(2) - eye(2)) / dir(2);
 
-   if (tzmin > tzmax) float_swap(tzmin, tzmax);
+   if (tzmin > tzmax) swap(tzmin, tzmax);
 
    if ((tmin > tzmax) || (tzmin > tmax))
       return false;
@@ -163,7 +170,7 @@ bool Box::CalculateHit(const Ray &ray, double &t, Shape *&hitShape) {
    if (tzmax < tmax)
       tmax = tzmax;
 
-   if (tmin > tmax) float_swap(tmin, tmax);
+   if (tmin > tmax) swap(tmin, tmax);
 
    // don't care if the box is behind the ray
    if (tmin < 0 && tmax < 0)

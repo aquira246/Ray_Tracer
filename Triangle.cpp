@@ -37,6 +37,12 @@ void Triangle::Initialize() {
    areaSqr = normal.norm();
 
    normal.normalize();
+
+   if (transformed) {
+      transformNormal(normal, &transformedNormal);
+   } else {
+      transformedNormal = normal;
+   }
 }
 
 void Triangle::Parse(Triangle &triangle) {
@@ -55,11 +61,7 @@ void Triangle::Parse(Triangle &triangle) {
 }
 
 void Triangle::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
-   if (transformed) {
-      transformNormal(normal, hitNormal);
-   } else {
-      *hitNormal = normal;
-   }
+   *hitNormal = transformedNormal;
 }
 
 // help from 

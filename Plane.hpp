@@ -31,7 +31,11 @@ class Plane: public Shape
          return PLANE_ID;
       }
 
+      void Init();
+
    private:
+      Eigen::Vector3f transformedNormal;
+      
 };
 
 #endif

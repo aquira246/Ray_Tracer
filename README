@@ -18,30 +18,33 @@ Default values:
 <width> 640
 <height> 480
 <BRDF> Blinn-Phong
-<Anti-Aliasing> on
+<Anti-Aliasing> on (unless global illumination is on)
 <Global Illumination> off
 
 How to run:
     Use this to create an image called sample.tga of the pov ray file
-    rt <width> <height> <input_scene.pov> <BRDF> <Anti-Aliasing> <Global Illumination>
-    rt <width> <height> <input_scene.pov> <BRDF> <Anti-Aliasing>
+    raytrace <width> <height> <input_scene.pov> <BRDF> <Global Illumination> <Anti-Aliasing>
+
+    Toggles Global Illumination. Anti-Aliasing is off
+    raytrace <width> <height> <input_scene.pov> <BRDF> <Global Illumination>
 
     Use this to toggle BRDF and use Anti-Aliasing
-    rt <width> <height> <input_scene.pov> <BRDF>
+    raytrace <width> <height> <input_scene.pov> <BRDF>
 
     Using this will run the ray tracer with Blinn-Phong automatically picked
-    rt <width> <height> <input_scene.pov>
+    raytrace <width> <height> <input_scene.pov>
 
     Using this will run the ray tracer with a width of 640 height of 480 by defualt
-    rt <input_scene.pov> <BRDF>
+    raytrace <input_scene.pov> <BRDF>
 
     Using this will run the ray tracer with Blinn-Phong and a width of 640 height of 480 by defualt
-    rt <input_scene.pov>
+    raytrace <input_scene.pov>
 
 Use "make clean" to remove all of the executables and object files
 
 Current Status:
-    Global Illumination with Monte Carlo: Working, although it is noisy. And takes SOOOOOOOOOOOOOO long.
+    Global Illumination with Monte Carlo: Not Working
+    Soft-Shdaows with Monte Carlo: Not Working
     Accelerated using a BVH. An Oct-Tree is under construction for fun though I doubt it will be finished.
     Transforms: Working
     Working shapes: Boxes, Spheres, Triangles, and Planes
@@ -61,4 +64,3 @@ Extra things to do later:
     Finish Oct-Tree
     Finish Toon-Shading
     Textures
-    Soft Shadows with Monte-Carlo

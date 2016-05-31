@@ -47,8 +47,12 @@ class Scene
     	static int Parse(FILE* infile, Scene &scene);
 
 	private:
+        void ReflectionAndRefraction(Shape *hitShape, Eigen::Vector3f &retColor, const Eigen::Vector3f &dir, 
+                                    const Eigen::Vector3f &hitPt, Eigen::Vector3f &hitNormal,  
+                                    int bouncesLeft, double prevIOR, double oldIOR, double newIOR);
         int shader;
 		Eigen::Vector3f BackgroundColor;
+        float SoftShadowValue(const Ray &checkRay, double lightDistance);
 };
 
 #endif

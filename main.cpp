@@ -40,12 +40,13 @@ int main(int argc, char **argv)
    scene = Scene();
  
    if(argc < 2 || argc > 7) {
-      cout << "Usage: rt <input_scene.pov>   | default AA is on, 640 by 480 with Blinn-Phong Shading" << endl;
-      cout << "Usage: rt <input_scene.pov> <shader>  | default AA is on, 640 by 480, and Blinn-Phong" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov>   | default AA is on, Blinn-Phong Shading" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov> <shader>   | default Blinn-Phong Shading" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov> <shader> <AntiAliasing> | default no global illumination" << endl;
-      cout << "Usage: rt <width> <height> <input_scene.pov> <shader> <AntiAliasing> <GlobalIllumination>" << endl;
+      cout << "Usage: raytrace <input_scene.pov>   | default AA is on, 640 by 480 with Blinn-Phong Shading" << endl;
+      cout << "Usage: raytrace <input_scene.pov> <shader>  | default AA is on, 640 by 480, and Blinn-Phong" << endl;
+      cout << "Usage: raytrace <width> <height> <input_scene.pov>   | default AA is on, Blinn-Phong Shading" << endl;
+      cout << "Usage: raytrace <width> <height> <input_scene.pov> <shader>   | default Blinn-Phong Shading" << endl;
+      cout << "Usage: raytrace <width> <height> <input_scene.pov> <shader> <GlobalIllumination>";
+      cout << "| AntiAliasing is off" << endl;
+      cout << "Usage: raytrace <width> <height> <input_scene.pov> <shader> <GlobalIllumination> <AntiAliasing>" << endl;
       exit(EXIT_FAILURE);
    }
 
@@ -68,16 +69,20 @@ int main(int argc, char **argv)
       height = stoi(argv[2]);
       fileName = argv[3];
       shader = stoi(argv[4]);
-      if (stoi(argv[5]) == 0)
+      GI_BOUNCES = stoi(argv[5]);
+      if (GI_BOUNCES != 0) {
          useAA = false;
+         GI_BOUNCES = min(3, GI_BOUNCES);
+         GI_BOUNCES = max(0, GI_BOUNCES);
+      }
    } else {
       width = stoi(argv[1]);
       height = stoi(argv[2]);
       fileName = argv[3];
       shader = stoi(argv[4]);
-      if (stoi(argv[5]) == 0)
+      if (stoi(argv[6]) == 0)
          useAA = false;
-      GI_BOUNCES = stoi(argv[6]);
+      GI_BOUNCES = stoi(argv[5]);
       if (GI_BOUNCES > 3)
          GI_BOUNCES = 3;
    }

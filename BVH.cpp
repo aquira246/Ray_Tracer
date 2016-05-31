@@ -43,39 +43,6 @@ void BVH::Init(int setup) {
         root.splitKD();
 }
 
-void BVH::AddShape(std::vector<Sphere> shapes) {
-    unsigned int curPos = root.BBoxes.size();
-
-    root.BBoxes.resize(curPos + shapes.size());
-
-    for (unsigned int i = 0; i < shapes.size(); ++i)
-    {
-        root.BBoxes[curPos] = EncaseSphere(&shapes[i]);
-    }
-}
-
-void BVH::AddShape(std::vector<Triangle> shapes) {
-    unsigned int curPos = root.BBoxes.size();
-
-    root.BBoxes.resize(curPos + shapes.size());
-
-    for (unsigned int i = 0; i < shapes.size(); ++i)
-    {
-        root.BBoxes[curPos] = EncaseTriangle(&shapes[i]);
-    }
-}
-
-void BVH::AddShape(std::vector<Box> shapes) {
-    unsigned int curPos = root.BBoxes.size();
-
-    root.BBoxes.resize(curPos + shapes.size());
-
-    for (unsigned int i = 0; i < shapes.size(); ++i)
-    {
-        root.BBoxes[curPos] = EncaseBox(&shapes[i]);
-    }
-}
-
 // goes through the BVH and checks for hits
 bool BVH::checkHit(const Ray &ray, double &t, Shape *&hitShape) {
     return root.checkHit(ray, t, std::numeric_limits<double>::max(), hitShape);

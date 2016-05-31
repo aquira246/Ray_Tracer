@@ -38,9 +38,24 @@ void mytest(string filename, int *tp, int n) {
       cout << "{" << laser.direction(0) << ", " << laser.direction(1) << ", " << laser.direction(2) << "}\n";
       cout << "Iteration type: Primary" << endl;
 
-      Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t, 1, 1, 5);
+      Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t, 1, 1, 5, 0);
       cout << "---------------------------------------------------------" << endl;
 
+   }
+}
+
+void runTest(string filename, int *tp, int n) {
+   FILE* infile = fopen(filename.c_str(), "r");
+   Scene scene = Scene();
+   Scene::Parse(infile, scene);
+   scene.setShader(0);
+
+   double t;
+   for (int i = 0; i < n; ++i)
+   {
+      // calculate camera ray
+      Ray laser = ComputeCameraRay(tp[i*2], tp[i*2 + 1], 640, 480, scene.cameras[0]);
+      Eigen::Vector3f clr = scene.ShootRayIntoScene(laser, t, 1, 1, 5, 1);
    }
 }
 
@@ -53,7 +68,9 @@ void UnitTest1() {
 
 
    int n = 2;
-   int testPositions[] = {399, 280, 240, 280};
+   int testPositions[] = {244, 389, 165, 356};
 
-   mytest("resources/valentine2.pov", testPositions, n);
+   // mytest("resources/valentine2.pov", testPositions, n);
+
+   runTest("resources/simple-gi.pov", testPositions, n);
 }

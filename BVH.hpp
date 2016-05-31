@@ -33,10 +33,6 @@ public:
     // defaults to 0 if too big
     void Init(int setup);
 
-    void AddShape(std::vector<Sphere> shapes);
-    void AddShape(std::vector<Triangle> shapes);
-    void AddShape(std::vector<Box> shapes);
-
     bool checkHit(const Ray &ray, double &t, Shape *&hitShape);
     bool checkShadowHit(const Ray &ray, double maxT);
 

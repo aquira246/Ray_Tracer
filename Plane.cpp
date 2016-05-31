@@ -18,6 +18,14 @@ Plane::~Plane(){
 
 }
 
+void Plane::Init() {
+   if (transformed) {
+      transformNormal(normal, &transformedNormal);
+   } else {
+      transformedNormal = normal;
+   }
+}
+
 void Plane::Parse(Plane &plane) {
    ParseLeftCurly();
 
@@ -27,14 +35,11 @@ void Plane::Parse(Plane &plane) {
    Shape::ParseModifiers(plane);
 
    ParseRightCurly();
+   plane.Init();
 }
 
 void Plane::GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t) {
-   if (transformed) {
-      transformNormal(normal, hitNormal);
-   } else {
-      *hitNormal = normal;
-   }
+   *hitNormal = transformedNormal;
 }
 
 // t = (n dot (plane point - ray position))/(n dot ray direction)

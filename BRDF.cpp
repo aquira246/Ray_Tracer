@@ -28,18 +28,13 @@ Eigen::Vector3f BlinnSpec(const Shape *hitShape, const Eigen::Vector3f &n, const
 Eigen::Vector3f BlinnPhong(const Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                     const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol) {
     // prepare what is need for blinn-phong
-    Eigen::Vector3f h = l + -d;
-    h.normalize();
-
+    Eigen::Vector3f h = (l + -d).normalized();
 
     // make diffuse
-    double ndl = max(0.0f, n.dot(l));
-    double dif = hitShape->finish.diffuse*ndl;
+    double dif = hitShape->finish.diffuse*max(0.0f, n.dot(l));
     
-    // make specular
-    double hdn = h.dot(n);
-    double shine = (1.0f/hitShape->finish.roughness);
-    double spec = hitShape->finish.specular*pow(hdn, shine);
+    // make specular: specular value * pow(h dot n, shine)
+    double spec = hitShape->finish.specular*pow(h.dot(n), (1.0f/hitShape->finish.roughness));
 
     #ifdef UNIT_TEST
     Eigen::Vector3f specular_color = hitShape->color.head<3>()*spec;

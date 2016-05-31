@@ -27,12 +27,13 @@ class Triangle: public Shape
       void GetTransformedPts(Eigen::Vector3f *ta, Eigen::Vector3f *tb, Eigen::Vector3f *tc);
 
    protected:
-   // Parts of a triangle
-   Eigen::Vector3f a, b, c;
-   Eigen::Vector3f normal;
-   float areaSqr;
+      // Parts of a triangle
+      Eigen::Vector3f a, b, c;
+      Eigen::Vector3f normal;
+      Eigen::Vector3f transformedNormal;
+      float areaSqr;
 
-   void Initialize();
+      void Initialize();
 };
 
 #endif

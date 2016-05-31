@@ -102,7 +102,95 @@ int Scene::Parse(FILE* infile, Scene &scene) {
    return numObjects;
 }
 
-// DOES NOT HAVE GLOBAL ILLUMINATION BEYOND BASE COLOR!!!!!!
+void Scene::ReflectionAndRefraction(Shape *hitShape, Vector3f &retColor, const Vector3f &dir, 
+                                    const Vector3f &hitPt, Vector3f &hitNormal,  
+                                    int bouncesLeft, double prevIOR, double oldIOR, double newIOR) {
+    double temp = -1;
+    // set the values of the refraction and relfection
+    double reflectVal = hitShape->finish.reflection;
+    double refractVal = hitShape->color[3];
+
+    // initialize colors
+    Eigen::Vector3f reflectColor(0,0,0);
+    Eigen::Vector3f refractColor(0,0,0);
+
+    // if we have refraction calculate it
+    if (hitShape->finish.refraction > 0) {
+        // do refraction
+        bool totalReflection = false;
+        Ray refrRay = ComputeRefractedRay(hitPt, hitNormal, dir, oldIOR, newIOR, &totalReflection);
+
+        #ifdef UNIT_TEST
+        cout << "-------\nIteration type: Refraction" << endl;
+        cout << "Ray: {" << refrRay.position[0] << ", " << refrRay.position[1] << ", " << refrRay.position[2] << "} -> {";
+        cout << refrRay.direction[0] << ", " << refrRay.direction[1] << ", " << refrRay.direction[2] << "}\n";
+        #endif
+
+        float R;
+        double refractT = -1;
+        if (!totalReflection) {
+            //schlick's approximation
+            float R0 = pow(((oldIOR - newIOR)/(oldIOR + newIOR)), 2);
+            float cosX = (-dir).dot(hitNormal);
+            
+            // if the oldIOR > newIOR then the old schlick's approx doesn't work
+            if (oldIOR > newIOR) {
+                const double iorDiv = oldIOR/newIOR;
+                const double sinT2 = iorDiv*iorDiv*(1 - cosX*cosX);
+                cosX = sqrt(1.0 - sinT2);
+            }
+
+            R = R0 + (1.0 - R0)*pow(1.0 - cosX, 5.0);
+
+            // calculate refraction color
+            refractColor = ShootRayIntoScene(refrRay, refractT, oldIOR, newIOR, bouncesLeft - 1, 0);
+        } else {
+            R = 1;
+            reflectVal += refractVal;
+            refractVal = 0;
+            #ifdef UNIT_TEST
+            cout << "Total Internal Reflection" << endl;
+            #endif
+        }
+
+        Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, dir);
+        reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, oldIOR, bouncesLeft - 1, 0);
+
+        /* beers law */
+        // if (!isInside) {
+        //     Eigen::Vector3f atten = .15f*baseColor* -fabs(refractT);
+        //     Eigen::Vector3f intensity;
+        //     intensity[0] = expf(atten[0]);
+        //     intensity[1] = expf(atten[1]);
+        //     intensity[2] = expf(atten[2]);
+
+        //     refractColor[0] = refractColor[0]*intensity[0];
+        //     refractColor[1] = refractColor[1]*intensity[1];
+        //     refractColor[2] = refractColor[2]*intensity[2];
+        // }
+
+        // cout << R << endl;
+        retColor = (1 - R)*refractColor + (R)*reflectColor;
+
+        /* previously did this for refraction (without the if statement above) */
+       // retColor = (1 - refractVal - reflectVal)*retColor + refractVal*refractColor + reflectVal*reflectColor;
+
+    }  
+    // if we have reflection calculate it
+    else if (reflectVal > 0) {
+        // do reflection
+        Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, dir);
+        #ifdef UNIT_TEST
+        cout << "-------\nIteration type: Reflection" << endl;
+        cout << "Ray: {" << reflRay.position[0] << ", " << reflRay.position[1] << ", " << reflRay.position[2] << "} -> {";
+        cout << reflRay.direction[0] << ", " << reflRay.direction[1] << ", " << reflRay.direction[2] << "}\n";
+        #endif
+
+        reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, oldIOR, bouncesLeft - 1, 0);
+        retColor = retColor*(1 - reflectVal) + reflectVal*reflectColor;
+    }
+}
+
 Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft, int GIBounces) {
     // const hitShape
     Shape *hitShape = NULL;
@@ -121,28 +209,23 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
         // determine if we are inside or outside the object, and set the IORs accordingly
         double cosI = (-ray.direction).dot(hitNormal);
         bool isInside = cosI < 0;
-        double oldIOR, newIOR;
+        double oldIOR = curIOR, newIOR;
 
         if (isInside) {
             // if we are inside, we are leaving the current IOR and going to the previous one
-            oldIOR = curIOR;
             newIOR = prevIOR;
             hitNormal = -hitNormal; // also reverse normal
         } else {
             // if we are entering we leaving the current IOR and entering the new one (putting it on top)
-            oldIOR = curIOR;
             newIOR = hitShape->finish.ior;
         }
 
-        // set the color to ambient
+//////////////////////////////////// SET THE AMBIENT COLOR //////////////////////////////////////////////////////
         Eigen::Vector3f baseColor = hitShape->color.head<3>();
-        Eigen::Vector3f retColor;
+        Eigen::Vector3f retColor(0,0,0);
 
         // if we can go deeper into global illumination and we are not doing refraction (which ignores this anyway)
-        if (GIBounces > 0 && hitShape->color[3] == 0) {
-            // set the color to 0
-            retColor = Eigen::Vector3f(0,0,0);
-
+        if (GIBounces > 0 && hitShape->finish.refraction == 0) {
             // setup the initial GIray
             Ray giRay = Ray(hitPt, Vector3f(0,0,0));
 
@@ -152,21 +235,22 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
             double holdt = 0;
 
             // for each sample, we shoot out a ray to calculate the color and add it to retColor
+            int hitsGI = 0;
             for (int i = 0; i < sample_size; ++i)
             {
                 giRay.direction = ComputeGIRay(hitNormal);
+                giRay.position = hitPt + giRay.direction*EPSILON;
                 retColor += ShootRayIntoScene(giRay, holdt, prevIOR, curIOR, bouncesLeft, GIBounces - 1);
             }
 
             // divide retColor by the sample size to average it
-            retColor /= sample_size;
+            retColor /= (float)hitsGI;
         } else {
             // otherwise we get ambient as normal
             retColor = baseColor*hitShape->finish.ambient;
         }
 
-        Eigen::Vector3f specCol = Eigen::Vector3f(0,0,0);
-
+/////////////////////////////////////ADD DIRECT LIGHTING ////////////////////////////////////////////
         //check to see if the hit object is in shadow for each light
         for (unsigned int i = 0; i < lights.size(); ++i)
         {    
@@ -177,126 +261,35 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
             Ray shadowRay = Ray(hitPt + l*EPSILON, l);  // epsilon test for shadow ray
             
             // if the spot is not in shadow because there is no object between it and the light
-            if(!ShadowHit(shadowRay, lightDistance)) {
+            float softShadowPercentage = 0;
+            // if (GIBounces == 0) {
+                if (!ShadowHit(shadowRay, lightDistance))
+                    softShadowPercentage = 1;
+            // } else {
+            //     softShadowPercentage = SoftShadowValue(shadowRay, lightDistance);
+            // }
+
+            if(softShadowPercentage > EPSILON) {
                 Eigen::Vector3f lightCol = lights[i].color.head<3>();
 
-                // if statement not here if doing old refraction. We would just do the else
-                if (hitShape->finish.refraction > 0 && bouncesLeft > 0) {
-                    specCol += BlinnSpec(hitShape, hitNormal, l, ray.direction, lightCol);                    
+                // pick our shader
+                if (shader == 0) {
+                    retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol)*softShadowPercentage;
+                } else if (shader == 1) {
+                    retColor += CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR)*softShadowPercentage;
+                } else if (shader == 2) {
+                    retColor += ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor)*softShadowPercentage;
                 } else {
-                    // pick our shader
-                    if (shader == 0) {
-                        retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol);
-                    } else if (shader == 1) {
-                        retColor += CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR);
-                    } else if (shader == 2) {
-                        retColor += ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor);
-                    } else {
-                        cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
-                        retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction);
-                    }
+                    cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
+                    retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction)*softShadowPercentage;
                 }
-            } else {
-                #ifdef UNIT_TEST
-                cout << "In shadow" << endl;
-
-                Eigen::Vector3f amb = baseColor*hitShape->finish.ambient;
-                cout << "Ambient: (" << amb[0] << ", " << amb[1] << ", " << amb[2] << ")" << endl;
-                #endif
-            }
+            } 
         }
 
-        // set the values of the refraction and relfection
-        double reflectVal = hitShape->finish.reflection;
-        double refractVal = hitShape->color[3];
-
-        // initialize colors
-        Eigen::Vector3f reflectColor = Eigen::Vector3f(0,0,0);
-        Eigen::Vector3f refractColor = Eigen::Vector3f(0,0,0);
-
+////////////////////////////////////////ADD REFLECTION AND REFRACTION ///////////////////////////////////////////////
         // if we can still bounce around for reflection and refraction
-        if (bouncesLeft > 0) {
-            // if we have refraction calculate it
-            if (hitShape->finish.refraction > 0) {
-                // do refraction
-                bool totalReflection = false;
-                Ray refrRay = ComputeRefractedRay(hitPt, hitNormal, ray.direction, oldIOR, newIOR, &totalReflection);
-
-                #ifdef UNIT_TEST
-                cout << "-------\nIteration type: Refraction" << endl;
-                cout << "Ray: {" << refrRay.position[0] << ", " << refrRay.position[1] << ", " << refrRay.position[2] << "} -> {";
-                cout << refrRay.direction[0] << ", " << refrRay.direction[1] << ", " << refrRay.direction[2] << "}\n";
-                #endif
-
-                float R;
-                double temp = -1;
-                double refractT = -1;
-                if (!totalReflection) {
-                    //schlick's approximation
-                    float R0 = pow(((oldIOR - newIOR)/(oldIOR + newIOR)), 2);
-                    float cosX = cosI;
-                    
-                    // if the oldIOR > newIOR then the old schlick's approx doesn't work
-                    if (oldIOR > newIOR) {
-                        const double iorDiv = oldIOR/newIOR;
-                        const double sinT2 = iorDiv*iorDiv*(1 - cosI*cosI);
-                        cosX = sqrt(1.0 - sinT2);
-                    }
-
-                    R = R0 + (1.0 - R0)*pow(1.0 - cosX, 5.0);
-
-                    // calculate refraction color
-                    refractColor = ShootRayIntoScene(refrRay, refractT, oldIOR, newIOR, bouncesLeft - 1, 0);
-                } else {
-                    R = 1;
-                    reflectVal += refractVal;
-                    refractVal = 0;
-                    #ifdef UNIT_TEST
-                    cout << "Total Internal Reflection" << endl;
-                    #endif
-                }
-
-                Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
-                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, 0);
-
-                /* beers law */
-                // if (!isInside) {
-                //     Eigen::Vector3f atten = .15f*baseColor* -fabs(refractT);
-                //     Eigen::Vector3f intensity;
-                //     intensity[0] = expf(atten[0]);
-                //     intensity[1] = expf(atten[1]);
-                //     intensity[2] = expf(atten[2]);
-
-                //     refractColor[0] = refractColor[0]*intensity[0];
-                //     refractColor[1] = refractColor[1]*intensity[1];
-                //     refractColor[2] = refractColor[2]*intensity[2];
-                // }
-
-                // cout << R << endl;
-                retColor = (1 - R)*refractColor + (R)*reflectColor;
-                retColor += (1 - refractVal - reflectVal)*specCol;
-
-                /* previously did this for refraction (without the if statement above) */
-               // retColor = (1 - refractVal - reflectVal)*retColor + refractVal*refractColor + reflectVal*reflectColor;
-
-            }  
-            // if we have reflection calculate it
-            else if (reflectVal > 0) {
-                // do reflection
-                Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, ray.direction);
-                double temp = -1;
-
-                #ifdef UNIT_TEST
-                cout << "-------\nIteration type: Reflection" << endl;
-                cout << "Ray: {" << reflRay.position[0] << ", " << reflRay.position[1] << ", " << reflRay.position[2] << "} -> {";
-                cout << reflRay.direction[0] << ", " << reflRay.direction[1] << ", " << reflRay.direction[2] << "}\n";
-                #endif
-
-                reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, curIOR, bouncesLeft - 1, 0);
-                retColor = retColor*(1 - reflectVal) + reflectVal*reflectColor;
-
-            }
-        }
+        if (bouncesLeft > 0)
+            ReflectionAndRefraction(hitShape, retColor, ray.direction, hitPt, hitNormal, bouncesLeft, prevIOR, oldIOR, newIOR);
 
         retColor[0] = fmin(retColor[0], 1.0f);
         retColor[1] = fmin(retColor[1], 1.0f);
@@ -305,13 +298,36 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
         // compute lighting
         return retColor;
     } else {
-        #if UNIT_TEST
-        cout << "No Intersection!" << endl;
-        #endif
+        // #if UNIT_TEST
+        // cout << "No Intersection!" << endl;
+        // #endif
 
         // return the background color
         return BackgroundColor;
     }
+}
+
+float Scene::SoftShadowValue(const Ray &checkRay, double lightDistance) {
+    Eigen::Vector3f shadowPos = checkRay.position;
+    Eigen::Vector3f shadowDir = checkRay.direction;
+    float hits = 0;
+
+    // setup the initial GIray
+    Ray shadowRay = Ray(shadowPos, shadowDir);
+
+    // for each sample, we shoot out a ray to calculate the color and add it to retColor
+    for (int i = 0; i < 32; ++i)
+    {
+        shadowRay.direction = ComputeGIRay(shadowDir);
+        shadowRay.position = shadowPos + shadowRay.direction;
+        if (ShadowHit(shadowRay, lightDistance)) {
+            ++hits;
+        }
+    }
+
+    // divide retColor by the sample size to average it
+    hits /= 32.0f;
+    return hits;
 }
 
 bool Scene::ShadowHit(const Ray &checkRay, double lightDistance) {

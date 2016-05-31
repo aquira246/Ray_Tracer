@@ -19,6 +19,7 @@ class Box: public Shape
         ~Box();
 
         static void Parse(Box &box);
+        void Init();
 
         Eigen::Vector3f corner1;
         Eigen::Vector3f corner2;
@@ -32,7 +33,8 @@ class Box: public Shape
         void GetNormal(const Ray &ray, Eigen::Vector3f *hitNormal, double t);
 
         bool CalculateHit(const Ray &ray, double &t, Shape *&hitShape);
-    private:
+
+        Eigen::Vector3f leftNormal, rightNormal, topNormal, botNormal, frontNormal, backNormal;
 };
 
 #endif

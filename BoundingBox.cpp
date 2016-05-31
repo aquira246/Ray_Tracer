@@ -6,13 +6,6 @@
 using namespace std;
 using namespace Eigen;
 
-// switch a and b (wanted to use xors but meh)
-inline void Float_Swap(float &a, float &b) {
-   float hold = a;
-   a = b;
-   b = hold;
-}
-
 BoundingBox::BoundingBox() {
    mins = Eigen::Vector3f(-.5, -.5, -.5);
    maxs = Eigen::Vector3f(.5, .5, .5);
@@ -23,9 +16,9 @@ BoundingBox::BoundingBox(Eigen::Vector3f c1, Eigen::Vector3f c2, Shape *c) {
    mins = c1;
    maxs = c2;
 
-   if (mins(0) > maxs(0)) Float_Swap(mins(0), maxs(0));
-   if (mins(1) > maxs(1)) Float_Swap(mins(1), maxs(1));
-   if (mins(2) > maxs(2)) Float_Swap(mins(2), maxs(2));
+   if (mins(0) > maxs(0)) swap(mins(0), maxs(0));
+   if (mins(1) > maxs(1)) swap(mins(1), maxs(1));
+   if (mins(2) > maxs(2)) swap(mins(2), maxs(2));
    contents = c;
 }
 
@@ -66,7 +59,7 @@ bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&h
    float txmin = (mins(0) - eye(0)) / dir(0);
    float txmax = (maxs(0) - eye(0)) / dir(0);
 
-   if (txmin > txmax) Float_Swap(txmin, txmax);
+   if (txmin > txmax) swap(txmin, txmax);
 
    float tmin = txmin;
    float tmax = txmax;
@@ -74,7 +67,7 @@ bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&h
    float tymin = (mins(1) - eye(1)) / dir(1);
    float tymax = (maxs(1) - eye(1)) / dir(1);
 
-   if (tymin > tymax) Float_Swap(tymin, tymax);
+   if (tymin > tymax) swap(tymin, tymax);
 
    // cut out early if there is for sure no hit
    if ((tmin > tymax) || (tymin > tmax))
@@ -89,7 +82,7 @@ bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&h
    float tzmin = (mins(2) - eye(2)) / dir(2);
    float tzmax = (maxs(2) - eye(2)) / dir(2);
 
-   if (tzmin > tzmax) Float_Swap(tzmin, tzmax);
+   if (tzmin > tzmax) swap(tzmin, tzmax);
 
    if ((tmin > tzmax) || (tzmin > tmax))
       return false;
@@ -100,7 +93,7 @@ bool BoundingBox::CalculateHit(const Ray &ray, double &t, double maxT, Shape *&h
    if (tzmax < tmax)
       tmax = tzmax;
 
-   if (tmin > tmax) Float_Swap(tmin, tmax);
+   if (tmin > tmax) swap(tmin, tmax);
 
    // don't care if the box is too far from the ray
    if (tmin > maxT || (tmin < 0 && tmax < 0))

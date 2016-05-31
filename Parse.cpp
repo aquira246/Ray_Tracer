@@ -93,15 +93,16 @@ void ParseScaleOrVector(Vector3f &v) {
 }
 
 void ParseRGBFColor(Eigen::Vector4f &c) {
-  ParseLeftAngle();
-  c[0] = ParseDouble();
-  ParseComma();
-  c[1] = ParseDouble();
-  ParseComma();
-  c[2] = ParseDouble();
-  ParseComma();
-  c[3] = ParseDouble();
-  ParseRightAngle();
+  ParseRGBColor(c);
+  // ParseLeftAngle();
+  // c[0] = ParseDouble();
+  // ParseComma();
+  // c[1] = ParseDouble();
+  // ParseComma();
+  // c[2] = ParseDouble();
+  // ParseComma();
+  // c[3] = ParseDouble();
+  // ParseRightAngle();
 }
 
 void ParseRGBColor(Eigen::Vector4f &c) { 
