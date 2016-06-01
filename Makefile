@@ -48,6 +48,10 @@ cornell:
 	./raytrace 640 480 resources/RScornell.pov 0 2
 cornellAA:
 	./raytrace 640 480 resources/RScornell.pov 0 2
+balls2:
+	./raytrace 640 480 resources/balls2.pov 0 0 0
+recurses:
+	./raytrace 640 480 resources/recurses.pov 0 0 0
 partfive:
 	./raytrace 640 480 resources/simple-gi.pov 0 2
 	./raytrace 640 480 resources/pretty.pov 0 2

@@ -63,7 +63,7 @@ inline void BBoxSwap(BoundingBox &a, BoundingBox &b) {
 
 // sort's v based on the axis passed in and using the max values. axis must be 0, 1, or 2
 // usnig selection sort becuase it's simple
-void SortBoundingBoxByMaxAxis(std::vector<BoundingBox> &v, int axis) {
+void SortBoundingBoxByAxis(std::vector<BoundingBox> &v, int axis) {
     if (axis > 2 || axis < 0) {
         cout << "ERROR! Axis is wrong size. Axis must be 0, 1, or 2" << endl;
         exit(-1);
@@ -78,7 +78,7 @@ void SortBoundingBoxByMaxAxis(std::vector<BoundingBox> &v, int axis) {
 
         for (unsigned int j = i + 1; j < size; ++j)
         {
-            check = v[j].getMaxs()[axis];
+            check = v[j].getMaxs()[axis] + v[j].getMins()[axis];
             if (check < smallest) {
                 smallest = check;
                 idx = j;
@@ -110,7 +110,7 @@ bool BVH_Node::checkShadowHit(const Ray &ray, double maxT) {
         for (unsigned int i = 0; i < BBoxes.size(); ++i)
         {
             if (BBoxes[i].CalculateHit(ray, checkingT, maxT, testShape)) {
-                if (checkingT > 0 && (checkingT < maxT)) {
+                if ((checkingT < maxT) && checkingT > 0) {
                     return true;
                 }
             }
@@ -194,31 +194,39 @@ void BVH_Node::splitKD() {
     myBounds = BoundingBox(mins, maxs, NULL);
 
     // split contents into two groups if enough
-    if (size > 2) {
+    if (size > 3) {
         // find the axis to split on
         Vector3f extent =  maxs - mins;
 
         // determine which axis has the largest extent and divide based on that axis
         if (extent(0) >= extent(1) && extent(0) >= extent(2)) {
-            SortBoundingBoxByMaxAxis(BBoxes, 0);
+            SortBoundingBoxByAxis(BBoxes, 0);
             // cout << "Sorted by 0" << endl; 
         } else if (extent(1) >= extent(2)) {
-            SortBoundingBoxByMaxAxis(BBoxes, 1);
+            SortBoundingBoxByAxis(BBoxes, 1);
             // cout << "Sorted by 1" << endl; 
         } else {
-            SortBoundingBoxByMaxAxis(BBoxes, 2);
+            SortBoundingBoxByAxis(BBoxes, 2);
             // cout << "Sorted by 2" << endl; 
         }
 
         // make two children
         BVH_Node leftChild = BVH_Node();
+        BVH_Node midChild = BVH_Node();
         BVH_Node rightChild = BVH_Node();
 
         // set the children's BBoxes
-        std::vector<BoundingBox> splitLeft(BBoxes.begin(), BBoxes.begin() + size/2);
-        std::vector<BoundingBox> splitRight(BBoxes.begin() + size/2, BBoxes.end());
+        vector<BoundingBox>::iterator start = BBoxes.begin();
+        vector<BoundingBox>::iterator midPoint1 = start + size/3;
+        vector<BoundingBox>::iterator midPoint2 = midPoint1 + size/3;
+        vector<BoundingBox>::iterator end = BBoxes.end();
+
+        std::vector<BoundingBox> splitLeft(start, midPoint1);
+        std::vector<BoundingBox> splitMid(midPoint1, midPoint2);
+        std::vector<BoundingBox> splitRight(midPoint2, end);
 
         leftChild.BBoxes = splitLeft;
+        midChild.BBoxes = splitMid;
         rightChild.BBoxes = splitRight;
 
         // clear our BBoxes
@@ -226,10 +234,12 @@ void BVH_Node::splitKD() {
 
         // call split on children
         leftChild.splitKD();
+        midChild.splitKD();
         rightChild.splitKD();
 
         // put children in vector
         children.push_back(leftChild);
+        children.push_back(midChild);
         children.push_back(rightChild);
     }
 }

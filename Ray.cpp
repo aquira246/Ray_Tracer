@@ -7,6 +7,7 @@
 using namespace std;
 
 #define EPSILON .001
+#define GI_EPSILON .00001
 #define PI 3.1415
 
 const float TWO_PI = 2*PI;
@@ -118,30 +119,22 @@ inline Eigen::Vector3f CosineSampleHemisphere()
 Eigen::Vector3f ComputeGIRay(const Eigen::Vector3f &N) {
    Eigen::Vector3f Z = Eigen::Vector3f(0, 0, 1);
    float cosangle = N.dot(Z);
-   if (cosangle < 0) {
+   if (cosangle < GI_EPSILON) {
       Z = -Z;
-      cosangle = N.dot(-Z);
+      cosangle = N.dot(Z);
    }
 
    Eigen::Vector3f axis = (N.cross(Z)).normalized();
-
-   // check if axis is 0?
-   // if (axis.norm() < .0001) {
-   //    // cout << "HEY! THE AXIS OF ROTATION IS WRONG" << endl;
-   //    Z = Eigen::Vector3f(0, 1, 0);
-   //    cosangle = N.dot(Z);
-   //    if (cosangle < 0) {
-   //       Z = -Z;
-   //       cosangle = N.dot(-Z);
-   //    }
-
-   //    axis = N.cross(Z);
-   // }
 
    Matrix3f rot;
    rot = Eigen::AngleAxisf(acos(cosangle), axis);
    Eigen::Vector3f ret = CosineSampleHemisphere();
    ret = rot*ret;
+   
+   #ifdef UNIT_TEST
+   cout << "for N(" << N[0] << ", " << N[1] << ", " << N[2] << ")     ";
+   cout << "(" << ret[0] << ", " << ret[1] << ", " << ret[2] << ")\n";
+   #endif
 
    return ret;
 }
