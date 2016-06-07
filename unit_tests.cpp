@@ -67,11 +67,10 @@ void UnitTest1() {
    cout << " ================== Beginning unit test 1 ================== " << endl;
 
 
-   int n = 1;
-   int testPositions[] = {244, 10, 165, 356};
+   int n = 4;
+   int testPositions[] = {417, 303, 100, 303, 540, 303, 320, 100};
 
-   // mytest("resources/valentine2.pov", testPositions, n);
+   // mytest("resources/recurses.pov", testPositions, n);
 
-   // runTest("resources/simple-gi.pov", testPositions, n);
-   runTest("resources/simple_plane.pov", testPositions, n);
+   runTest("resources/RScornell.pov", testPositions, n);
 }

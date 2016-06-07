@@ -12,7 +12,7 @@ BRDFs to choose from:
 2 = An attempt at toon-shading. Still under construction. 
 
 Anti-Aliasing = 0 is off, anything else is on
-GlobalIllumination = 0 is off, 2 or 3 is the number of levels of recursion. It has a cap at 3.
+GlobalIllumination = 0 is off, any positive number is on. Default is 2.
 
 Default values:
 <width> 640
@@ -43,8 +43,7 @@ How to run:
 Use "make clean" to remove all of the executables and object files
 
 Current Status:
-    Global Illumination with Monte Carlo: Not Working
-    Soft-Shdaows with Monte Carlo: Not Working
+    Global Illumination with Monte Carlo: Working. The first recursion is 128 rays, and 32 on the second.
     Accelerated using a BVH. An Oct-Tree is under construction for fun though I doubt it will be finished.
     Transforms: Working
     Working shapes: Boxes, Spheres, Triangles, and Planes
@@ -64,3 +63,5 @@ Extra things to do later:
     Finish Oct-Tree
     Finish Toon-Shading
     Textures
+    Setup the BVH so that it can be split into 8 or so.
+    Soft-Shdaows with Monte Carlo

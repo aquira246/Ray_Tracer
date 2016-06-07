@@ -22,6 +22,12 @@ ifdef PROFILE
 	CFLAGS += -pg
 endif
 
+ifdef ICPC
+	CC=ICPC
+else
+	CC=g++
+endif
+
 all: $(OBJECT)
 	$(CC) -g $(CFLAGS) $(INC) $(OBJECT) $(LIB) -o $(name)
 
@@ -44,6 +50,8 @@ good:
 	./raytrace 640 480 resources/simp_cam.pov
 good2:
 	./raytrace 640 480 resources/simp_cam2.pov
+simpleGI:
+	./raytrace 320 240 resources/simple-gi.pov 0 2
 cornell:
 	./raytrace 640 480 resources/RScornell.pov 0 2
 cornellAA:

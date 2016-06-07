@@ -5,6 +5,19 @@ using namespace std;
 
 const double PI = 3.141592653589793;
 
+Eigen::Vector3f Diffuse(const Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
+                                    const Eigen::Vector3f &lightCol) {
+    // make diffuse
+    double dif = hitShape->finish.diffuse*max(0.0f, n.dot(l));
+    Eigen::Vector3f ret = hitShape->color.head<3>()*dif;
+
+    // add light color
+    ret[0] *= lightCol[0];
+    ret[1] *= lightCol[1];
+    ret[2] *= lightCol[2];
+    return ret;
+}
+
 Eigen::Vector3f BlinnSpec(const Shape *hitShape, const Eigen::Vector3f &n, const Eigen::Vector3f &l, 
                                     const Eigen::Vector3f &d, const Eigen::Vector3f &lightCol) {
     // prepare what is need for blinn-phong
@@ -37,15 +50,15 @@ Eigen::Vector3f BlinnPhong(const Shape *hitShape, const Eigen::Vector3f &n, cons
     double spec = hitShape->finish.specular*pow(h.dot(n), (1.0f/hitShape->finish.roughness));
 
     #ifdef UNIT_TEST
-    Eigen::Vector3f specular_color = hitShape->color.head<3>()*spec;
+    // Eigen::Vector3f specular_color = hitShape->color.head<3>()*spec;
 
-    Eigen::Vector3f diffuse_color = hitShape->color.head<3>()*dif;
+    // Eigen::Vector3f diffuse_color = hitShape->color.head<3>()*dif;
     
-    Eigen::Vector3f ambient_color = hitShape->color.head<3>()*hitShape->finish.ambient;
+    // Eigen::Vector3f ambient_color = hitShape->color.head<3>()*hitShape->finish.ambient;
 
-    cout << "Ambient: " << "(" << ambient_color(0) << ", " << ambient_color(1) << ", " << ambient_color(2) << ")\n";
-    cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
-    cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
+    // cout << "Ambient: " << "(" << ambient_color(0) << ", " << ambient_color(1) << ", " << ambient_color(2) << ")\n";
+    // cout << "Diffuse: " << "(" << diffuse_color(0) << ", " << diffuse_color(1) << ", " << diffuse_color(2) << ")\n";
+    // cout << "Specular: " << "(" << specular_color(0) << ", " << specular_color(1) << ", " << specular_color(2) << ")\n";
     #endif
 
     Eigen::Vector3f ret = hitShape->color.head<3>()*(dif + spec);

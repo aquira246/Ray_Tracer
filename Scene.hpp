@@ -19,7 +19,7 @@
 #include "Box.hpp"
 
 #define GI_SAMPLE_SIZE 128
-#define GI_SMALL_SAMPLE_SIZE 64
+#define GI_SMALL_SAMPLE_SIZE 32
 
 class Scene
 {
@@ -50,9 +50,9 @@ class Scene
         void ReflectionAndRefraction(Shape *hitShape, Eigen::Vector3f &retColor, const Eigen::Vector3f &dir, 
                                     const Eigen::Vector3f &hitPt, Eigen::Vector3f &hitNormal,  
                                     int bouncesLeft, double prevIOR, double oldIOR, double newIOR);
+        Eigen::Vector3f GetAmbient(const Ray &ray, int GIBounces);
         int shader;
 		Eigen::Vector3f BackgroundColor;
-        float SoftShadowValue(const Ray &checkRay, double lightDistance);
 };
 
 #endif

@@ -7,9 +7,10 @@ using namespace std;
 
 void printBar(int current, int max, int length) {
    static int r = 0;
-   int NumEquals = ((double)current/(double)max)*length;
+   double percent = ((double)current/(double)max);
+   int NumEquals = percent*length;
       cout << "[";
-      for (int i = 0; i < length; ++i)
+      for (int i = 1; i <= length; ++i)
       {
          if (i <= NumEquals) {
             cout << "=";
@@ -45,6 +46,6 @@ void printBar(int current, int max, int length) {
          }
       }
 
-      cout << "]\r";
+      cout << "]   " << percent*100 << "%                         \r";
       std::cout.flush();
 }

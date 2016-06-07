@@ -111,6 +111,14 @@ void Scene::ReflectionAndRefraction(Shape *hitShape, Vector3f &retColor, const V
     // do reflection
     double temp = -1;
     Ray reflRay = ComputeReflectionRay(hitPt, hitNormal, dir);
+
+    #ifdef UNIT_TEST
+    cout << endl;
+    cout << "-------\n";
+    cout << "Ray: {" << reflRay.position(0) << ", " << reflRay.position(1) << ", " << reflRay.position(2) << "} -> ";
+    cout << "{" << reflRay.direction(0) << ", " << reflRay.direction(1) << ", " << reflRay.direction(2) << "}\n";
+    cout << "Iteration type: Reflection" << endl;
+    #endif
     Eigen::Vector3f reflectColor = ShootRayIntoScene(reflRay, temp, prevIOR, oldIOR, bouncesLeft - 1, 0);
 
     // if we have refraction calculate it
@@ -134,6 +142,14 @@ void Scene::ReflectionAndRefraction(Shape *hitShape, Vector3f &retColor, const V
             float R = R0 + (1.0 - R0)*pow(1.0 - cosX, 5.0);
 
             // calculate refraction color
+            #ifdef UNIT_TEST
+            cout << endl;
+            cout << "-------\n";
+            cout << "Ray: {" << refrRay.position(0) << ", " << refrRay.position(1) << ", " << refrRay.position(2) << "} -> ";
+            cout << "{" << refrRay.direction(0) << ", " << refrRay.direction(1) << ", " << refrRay.direction(2) << "}\n";
+            cout << "Iteration type: Refracted" << endl;
+            #endif
+
             Eigen::Vector3f refractColor = ShootRayIntoScene(refrRay, temp, oldIOR, newIOR, bouncesLeft - 1, 0);
             retColor = (1 - R)*refractColor + (R)*reflectColor;
         } else {
@@ -147,17 +163,77 @@ void Scene::ReflectionAndRefraction(Shape *hitShape, Vector3f &retColor, const V
     }
 }
 
+Eigen::Vector3f Scene::GetAmbient(const Ray &ray, int GIBounces) {
+    double holdt;
+    Shape *hitShape = NULL;
+    Eigen::Vector3f hitNormal;
+
+    // see if ray hits anything
+    if (CheckHit(ray, hitShape, holdt, hitNormal)) {
+
+        // calculate the point the shape was hit at
+        Eigen::Vector3f hitPt = ray.position + ray.direction*holdt;
+
+        // determine if we are inside or outside the object
+        if ((-ray.direction).dot(hitNormal) < 0) {
+            // if we are inside, we reverse the normal
+            hitNormal = -hitNormal;
+        }
+
+//////////////////////////////////// GET THE AMBIENT COLOR OF THE SECONDARY RAYS //////////////////////////////////////////////////////
+        Eigen::Vector3f retColor(0,0,0);
+
+        // if we can go deeper into global illumination and we are not doing refraction (which ignores this anyway)
+        if (GIBounces > 0 && hitShape->finish.refraction == 0) {
+            // setup the initial GIray
+            Ray giRay = Ray(hitPt, Vector3f(0,0,0));
+
+            // for each sample, we shoot out a ray to calculate the color and add it to retColor
+            for (int i = 0; i < GI_SMALL_SAMPLE_SIZE; ++i)
+            {
+                giRay.direction = ComputeGIRay(hitNormal);
+                giRay.position = hitPt + giRay.direction*EPSILON;
+                retColor += GetAmbient(giRay, GIBounces - 1);
+            }
+
+            // divide retColor by the sample size to average it
+            retColor /= GI_SMALL_SAMPLE_SIZE;
+        } else {
+            retColor = hitShape->color.head(3)*hitShape->finish.ambient;
+        }
+
+/////////////////////////////////////ADD DIFFUSE LIGHTING ////////////////////////////////////////////
+        //check to see if the hit object is in shadow for each light
+        for (unsigned int i = 0; i < lights.size(); ++i)
+        {    
+            // create the shadow ray to check if the spot is in shadow
+            Eigen::Vector3f l = lights[i].location - hitPt;
+            double lightDistance = l.norm();
+            l.normalize();
+            Ray shadowRay = Ray(hitPt + l*EPSILON, l);  // epsilon test for shadow ray
+            
+            // if the spot is not in shadow because there is no object between it and the light
+            if(!ShadowHit(shadowRay, lightDistance)) {
+                Eigen::Vector3f lightCol = lights[i].color.head<3>();
+
+                retColor += Diffuse(hitShape, hitNormal, l, lightCol);
+            } 
+        }
+
+        // compute lighting
+        return retColor;
+    } else {
+        // return the background color
+        return BackgroundColor;
+    }
+}
+
 Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevIOR, double curIOR, int bouncesLeft, int GIBounces) {
-    // const hitShape
     Shape *hitShape = NULL;
     Eigen::Vector3f hitNormal;
 
     // see if ray hits anything
     if (CheckHit(ray, hitShape, t, hitNormal)) {
-
-        #ifdef UNIT_TEST
-        cout << "T = " << t << endl;
-        #endif
 
         // calculate the point the shape was hit at
         Eigen::Vector3f hitPt = ray.position + ray.direction*t;
@@ -182,21 +258,16 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
             // setup the initial GIray
             Ray giRay = Ray(hitPt, Vector3f(0,0,0));
 
-            // calculate the number of samples we are taking. On the second layer cut the samples in half
-            int sample_size = GIBounces > 1 ? GI_SAMPLE_SIZE : GI_SMALL_SAMPLE_SIZE;
-
-            double holdt = 0;
-
             // for each sample, we shoot out a ray to calculate the color and add it to retColor
-            for (int i = 0; i < sample_size; ++i)
+            for (int i = 0; i < GI_SAMPLE_SIZE; ++i)
             {
                 giRay.direction = ComputeGIRay(hitNormal);
                 giRay.position = hitPt + giRay.direction*EPSILON;
-                retColor += ShootRayIntoScene(giRay, holdt, prevIOR, curIOR, bouncesLeft, GIBounces - 1);
+                retColor += GetAmbient(giRay, GIBounces - 1);
             }
 
             // divide retColor by the sample size to average it
-            retColor /= sample_size;
+            retColor /= GI_SAMPLE_SIZE;
         } else {
             retColor = hitShape->color.head(3)*hitShape->finish.ambient;
         }
@@ -212,31 +283,22 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
             Ray shadowRay = Ray(hitPt + l*EPSILON, l);  // epsilon test for shadow ray
             
             // if the spot is not in shadow because there is no object between it and the light
-            float softShadowPercentage = 0;
-            // if (GIBounces == 0) {
-                if (!ShadowHit(shadowRay, lightDistance))
-                    softShadowPercentage = 1;
-            // } else {
-            //     softShadowPercentage = SoftShadowValue(shadowRay, lightDistance);
-            // }
-
-            if(softShadowPercentage > EPSILON) {
+            if(!ShadowHit(shadowRay, lightDistance)) {
                 Eigen::Vector3f lightCol = lights[i].color.head<3>();
 
                 // pick our shader
                 if (shader == 0) {
-                    retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol)*softShadowPercentage;
+                    retColor += BlinnPhong(hitShape, hitNormal, l, ray.direction, lightCol);
                 } else if (shader == 1) {
-                    retColor += CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR)*softShadowPercentage;
+                    retColor += CookTorrance(hitShape, hitNormal, l, ray.direction, lightCol, oldIOR, newIOR);
                 } else if (shader == 2) {
-                    retColor += ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor)*softShadowPercentage;
+                    retColor += ToonSorta(hitShape, hitNormal, l, ray.direction, lightCol, &retColor);
                 } else {
                     cout << "BAD SHADER VALUE! " << shader << "   Default to BlinnPhong" << endl;
-                    retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction)*softShadowPercentage;
+                    retColor += BlinnPhong(hitShape, hitNormal, l, lightCol, ray.direction);
                 }
             } 
         }
-
 ////////////////////////////////////////ADD REFLECTION AND REFRACTION ///////////////////////////////////////////////
         // if we can still bounce around for reflection and refraction
         if (bouncesLeft > 0)
@@ -256,29 +318,6 @@ Eigen::Vector3f Scene::ShootRayIntoScene(const Ray &ray, double &t, double prevI
         // return the background color
         return BackgroundColor;
     }
-}
-
-float Scene::SoftShadowValue(const Ray &checkRay, double lightDistance) {
-    Eigen::Vector3f shadowPos = checkRay.position;
-    Eigen::Vector3f shadowDir = checkRay.direction;
-    float hits = 0;
-
-    // setup the initial GIray
-    Ray shadowRay = Ray(shadowPos, shadowDir);
-
-    // for each sample, we shoot out a ray to calculate the color and add it to retColor
-    for (int i = 0; i < 32; ++i)
-    {
-        shadowRay.direction = ComputeGIRay(shadowDir);
-        shadowRay.position = shadowPos + shadowRay.direction;
-        if (ShadowHit(shadowRay, lightDistance)) {
-            ++hits;
-        }
-    }
-
-    // divide retColor by the sample size to average it
-    hits /= 32.0f;
-    return hits;
 }
 
 bool Scene::ShadowHit(const Ray &checkRay, double lightDistance) {
@@ -332,10 +371,15 @@ bool Scene::CheckHit(const Ray &checkRay, Shape *&hitShape, double &t, Eigen::Ve
         hitShape->GetNormal(checkRay, &hitNormal, t);
 
         #ifdef UNIT_TEST
-        Eigen::Vector3f hitPt = checkRay.position + checkRay.direction*t;
-        cout << "Hit Object t: " << t;
-        cout << "    Intersection point: {" << hitPt(0) << ", " << hitPt(1) << ", " << hitPt(2) << "}\n";
-        cout << "Normal: {" << hitNormal(0) << ", " << hitNormal(1) << ", " << hitNormal(2) << "}\n";
+        // Eigen::Vector3f hitPt = checkRay.position + checkRay.direction*t;
+
+        // if (hitShape->GetShape() == BOX_ID) {
+        //     cout << "BOX! :: ";
+        // }
+
+        // cout << "Hit Object t: " << t;
+        // cout << "    Intersection point: {" << hitPt(0) << ", " << hitPt(1) << ", " << hitPt(2) << "}\n";
+        // cout << "Normal: {" << hitNormal(0) << ", " << hitNormal(1) << ", " << hitNormal(2) << "}\n";
         #endif
     }
 

@@ -114,17 +114,28 @@ inline Eigen::Vector3f CosineSampleHemisphere()
    const float y = r * sin(theta);
 
    return Eigen::Vector3f(x, y, sqrt(max(0.0f, 1 - x*x - y*y)));
+   // return Eigen::Vector3f(0,0,1);
 }
 
 Eigen::Vector3f ComputeGIRay(const Eigen::Vector3f &N) {
    Eigen::Vector3f Z = Eigen::Vector3f(0, 0, 1);
    float cosangle = N.dot(Z);
-   if (cosangle < GI_EPSILON) {
-      Z = -Z;
-      cosangle = N.dot(Z);
+   
+   // if angle is around 0, then we don't need to rotate it
+   if (cosangle < 1 + GI_EPSILON && cosangle > 1 - GI_EPSILON)
+   {
+      Eigen::Vector3f ret = CosineSampleHemisphere();
+   
+      #ifdef UNIT_TEST
+      cout << "Situation 1: cosangle: " << cosangle << "   ";
+      cout << "for N(" << N[0] << ", " << N[1] << ", " << N[2] << ")     ";
+      cout << "(" << ret[0] << ", " << ret[1] << ", " << ret[2] << ")\n";
+      #endif
+
+      return ret;
    }
 
-   Eigen::Vector3f axis = (N.cross(Z)).normalized();
+   Eigen::Vector3f axis = (Z.cross(N)).normalized();
 
    Matrix3f rot;
    rot = Eigen::AngleAxisf(acos(cosangle), axis);
@@ -132,6 +143,7 @@ Eigen::Vector3f ComputeGIRay(const Eigen::Vector3f &N) {
    ret = rot*ret;
    
    #ifdef UNIT_TEST
+   cout << "cosangle: " << cosangle << "   ";
    cout << "for N(" << N[0] << ", " << N[1] << ", " << N[2] << ")     ";
    cout << "(" << ret[0] << ", " << ret[1] << ", " << ret[2] << ")\n";
    #endif

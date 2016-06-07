@@ -17,7 +17,7 @@
 using namespace std;
 
 const int MAX_REFLECTIONS = 5;
-int GI_BOUNCES = 0;
+int GI_BOUNCES = -1;
 int width = 640;
 int height = 480;
 int shader = 0;
@@ -82,9 +82,12 @@ int main(int argc, char **argv)
       shader = stoi(argv[4]);
       if (stoi(argv[6]) == 0)
          useAA = false;
-      GI_BOUNCES = stoi(argv[5]);
-      if (GI_BOUNCES > 3)
-         GI_BOUNCES = 3;
+      if (stoi(argv[5]) > 0)
+         GI_BOUNCES = 2;
+   }
+
+   if (GI_BOUNCES <= 0) {
+      GI_BOUNCES = -1;
    }
 
    infile = fopen(fileName, "r");
